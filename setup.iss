@@ -15,7 +15,7 @@ OutputBaseFilename=Helix_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-SetupIconFile=resources\icons\Sphere.ico
+SetupIconFile=resources\icons\application.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
