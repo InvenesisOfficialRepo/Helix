@@ -1,0 +1,68 @@
+#ifndef DATABASEVIEWWINDOW_H
+#define DATABASEVIEWWINDOW_H
+
+#include <QMainWindow>
+#include <QItemSelection>
+#include <QStandardItemModel>
+#include <QSqlTableModel>
+#include <QLineEdit>
+#include <QTimer>
+#include <QLabel>
+#include <QCheckBox>
+#include <QStackedWidget>
+
+#include "customproxymodel.h"
+#include "MainWindowViewModel.h"
+
+class TecanWindow;
+
+QT_BEGIN_NAMESPACE
+namespace Ui {
+class MainWindow;
+}
+QT_END_NAMESPACE
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit MainWindow(const QString &preAuthRole = QString(), QWidget *parent = nullptr);
+    ~MainWindow();
+
+private:
+    Ui::MainWindow *ui;
+    std::unique_ptr<MainWindowViewModel> viewModel;
+    
+    QTimer* refreshTimer;     // Timer to refresh data periodically
+    QLabel *rowCountLabel;    // Displays total row count
+    QLabel *columnCountLabel; // Displays total column count
+    QLabel *selectedRowCountLabel; // Displays selected row count
+    QCheckBox* hideDoneCheckBox = nullptr;
+
+    QStackedWidget* mainStackedWidget = nullptr;
+    TecanWindow* tecanView = nullptr;
+    QAction* actionRegisterCompound = nullptr;
+    QAction* actionCreateSolutionFromBottle = nullptr;
+
+    void updateFilters(); // ✅ Helper function for dual filtering
+
+private slots:
+    void onTableSelected(const QItemSelection &selected, const QItemSelection &deselected);
+    void on_actionAdd_triggered();
+    void refreshTableView();
+    void on_refreshTableButton_triggered();
+    void setUserRole(const QString &role);
+    void setupTreeView();
+    void autoRefreshTableView();
+    void updateTableStatistics();
+    void on_actionexportCsvButton_triggered();
+    void on_actionTecan_triggered();
+    void updateFilterCriteria(); // ✅ Slot for handling dual-column filtering changes
+    void on_actionUpdate_triggered();
+    void on_actionAdminResetPassword_triggered();
+    void onRegisterCompoundTriggered();
+    void onCreateSolutionFromBottleTriggered();
+};
+
+#endif // DATABASEVIEWWINDOW_H

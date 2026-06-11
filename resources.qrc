@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<RCC>
+    <qresource prefix="/icons">
+        <file>resources/icons/visible.png</file>
+        <file>resources/icons/cacher.png</file>
+        <file>resources/icons/Sphere.png</file>
+        <file>resources/icons/table.png</file>
+        <file>resources/icons/ajouter.png</file>
+        <file>resources/icons/rafraichir.png</file>
+        <file>resources/icons/chercher.png</file>
+        <file>resources/icons/effacer.png</file>
+        <file>resources/icons/telecharger.png</file>
+        <file>resources/icons/tecan.png</file>
+        <file>resources/icons/dossier.png</file>
+        <file>resources/icons/sauvegarder.png</file>
+        <file>resources/icons/telechargement-de-fichiers.png</file>
+        <file>resources/icons/platemap.png</file>
+        <file>resources/icons/rechargement.png</file>
+    </qresource>
+    <qresource prefix="/data">
+        <file>resources/data/standards_matrix.json</file>
+        <file>resources/data/volumeMap.json</file>
+        <file>resources/data/invenesis_catalogue.json</file>
+    <file>resources/data/tests_vocabulary.json</file><file>resources/data/qc_plates.json</file></qresource>
+    <qresource prefix="/cert">
+        <file>resources/cert/prod-ca-2021.crt</file>
+    </qresource>
+    <qresource prefix="/styles">
+        <file>resources/style.qss</file>
+        <file>resources/style_light.qss</file>
+        <file>resources/style_template.qss</file>
+    </qresource>
+</RCC>

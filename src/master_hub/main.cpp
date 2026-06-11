@@ -1,0 +1,87 @@
+#include <QApplication>
+#include <QQmlApplicationEngine>
+#include <QtQml/qqml.h>
+#include <QCoreApplication>
+#include <QIcon>
+#include <QFile>
+#include <QMessageBox>
+
+#include "app/AppContext.h"
+#include "database/Database.h"
+#include "database/DbConfig.h"
+#include "services/Logger.h"
+#include "ThemeManager.h"
+
+#include <QSettings>
+
+int main(int argc, char *argv[])
+{
+    // 1. Initialize QApplication (required for both QWidget and QGui/QML)
+    QApplication app(argc, argv);
+
+    // Initialize Logger
+    Logger::init("invenesis_merge_app.log");
+    qInfo() << "========================================";
+    qInfo() << "Invenesis Unified Merge Application started";
+
+    // Set Application Details
+    QCoreApplication::setOrganizationName("Invenesis");
+    QCoreApplication::setOrganizationDomain("invenesis.com");
+    QCoreApplication::setApplicationName("Invenesis Master Hub");
+    QCoreApplication::setApplicationVersion("1.0.0");
+
+    // Load Window Icon
+    QIcon appIcon(":/icons/resources/icons/Sphere.png");
+    app.setWindowIcon(appIcon);
+
+    // Set QML Quick controls style
+    qputenv("QT_QUICK_CONTROLS_STYLE", QByteArray("Material"));
+
+    // 2. Initialize the Studio Theme Manager and compile dynamic QSS
+    ThemeManager::instance()->initialize(&app);
+
+    // 3. Load DB config from environment variables (for Widgets GUI thread default connection)
+    DbConfig cfg;
+    QString error;
+    if (!loadDbConfigFromEnv(cfg, error)) {
+        QMessageBox::critical(nullptr,
+                              QObject::tr("Configuration error"),
+                              QObject::tr("Database configuration is invalid:\n%1").arg(error));
+        return -1;
+    }
+
+    // Connect default database for Widget models in main GUI thread
+    QString dbErr;
+    if (!Database::connect(cfg.host,
+                           cfg.port,
+                           cfg.dbName,
+                           cfg.user,
+                           cfg.password,
+                           &dbErr)) {
+        QMessageBox::critical(nullptr,
+                              QObject::tr("Database connection error"),
+                              QObject::tr("Could not connect to the database:\n%1").arg(dbErr));
+        return -1;
+    }
+
+    // 4. Spin up the QML Engine
+    QQmlApplicationEngine engine;
+
+    // Instantiate and register AppContext singleton
+    AppContext appContext;
+    qmlRegisterSingletonInstance("TestRequests", 1, 0, "App", &appContext);
+
+    // Load QML from the compiled QML module
+    engine.loadFromModule("TestRequests", "Main");
+
+    if (engine.rootObjects().isEmpty()) {
+        qCritical() << "Failed to load QML root objects";
+        return -1;
+    }
+
+    int ret = app.exec();
+
+    qInfo() << "Invenesis Unified Merge Application shutting down";
+    Logger::cleanup();
+    return ret;
+}

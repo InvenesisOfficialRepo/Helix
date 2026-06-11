@@ -1,0 +1,35 @@
+# Windows build directories
+build/
+build-*/
+x64/
+Debug/
+Release/
+
+# Qt Creator settings
+.qtcreator/
+*.user
+*.user.*
+CMakeLists.txt.user*
+
+# Visual Studio files
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Operating System files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Log files and database exports
+*.log
+*.sqlite
+invenesis_merge_app.log
+
+# Temporary/Backup files
+*~
+*.bak
+*.tmp
