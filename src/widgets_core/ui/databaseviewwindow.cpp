@@ -22,7 +22,7 @@
 #include "logindialog.h"
 #include "adminresetpassworddialog.h"
 #include "tecanwindow.h"
-#include "UpdateChecker.h"
+#include "UpdateManager.h"
 
 
 #include <QSettings>
@@ -251,24 +251,38 @@ MainWindow::MainWindow(const QString &preAuthRole, QWidget *parent)
             this, &MainWindow::updateTableStatistics);
 
 
-    auto* checker = new UpdateChecker(this);
-    connect(checker, &UpdateChecker::updateAvailable, this,
-            [this](const QString& ver, const QString& notes, const QUrl& url){
-                if (ver.isEmpty()) {
-                    QMessageBox::information(this, "Updates", "You're up to date.");
-                    return;
-                }
+    auto* checker = new UpdateManager(this);
+    connect(checker, &UpdateManager::updateAvailable, this,
+            [this, checker](const QString& ver, const QString& notes){
                 const auto ret = QMessageBox::information(
                     this, tr("Update Available"),
                     tr("Version %1 is available.\n\n%2\n\nUpdate now?").arg(ver, notes),
                     QMessageBox::Yes | QMessageBox::No);
                 if (ret == QMessageBox::Yes) {
-                    // Preferred (IFW): launch MaintenanceTool in updater mode if present
-                    QProcess::startDetached(QCoreApplication::applicationDirPath()+"/MaintenanceTool.exe", {"--updater"});
+                    checker->startDownload();
+                } else {
+                    checker->deleteLater();
                 }
             });
-    // Silent check on startup
-    checker->checkNow(false);
+    connect(checker, &UpdateManager::downloadFinished, this, [checker, this]() {
+        const auto ret = QMessageBox::information(
+            this, tr("Download Finished"),
+            tr("Update downloaded. Would you like to restart and install now?"),
+            QMessageBox::Yes | QMessageBox::No);
+        if (ret == QMessageBox::Yes) {
+            checker->installAndExit();
+        } else {
+            checker->deleteLater();
+        }
+    });
+    connect(checker, &UpdateManager::noUpdateAvailable, this, [checker]() {
+        checker->deleteLater();
+    });
+    connect(checker, &UpdateManager::errorOccurred, this, [checker](const QString& err) {
+        qWarning() << "Helix Update Check Failed:" << err;
+        checker->deleteLater();
+    });
+    checker->checkForUpdates();
 }
 
 MainWindow::~MainWindow()
@@ -544,9 +558,40 @@ void MainWindow::on_actionTecan_triggered()
 
 void MainWindow::on_actionUpdate_triggered()
 {
-    qInfo() << "Button pressed";
-    UpdateChecker checker;
-    checker.checkNow(true);
+    qInfo() << "Check for update triggered from menu";
+    auto* checker = new UpdateManager(this);
+    connect(checker, &UpdateManager::updateAvailable, this,
+            [this, checker](const QString& ver, const QString& notes){
+                const auto ret = QMessageBox::information(
+                    this, tr("Update Available"),
+                    tr("Version %1 is available.\n\n%2\n\nUpdate now?").arg(ver, notes),
+                    QMessageBox::Yes | QMessageBox::No);
+                if (ret == QMessageBox::Yes) {
+                    checker->startDownload();
+                } else {
+                    checker->deleteLater();
+                }
+            });
+    connect(checker, &UpdateManager::noUpdateAvailable, this, [this, checker]() {
+        QMessageBox::information(this, tr("Updates"), tr("You are up to date."));
+        checker->deleteLater();
+    });
+    connect(checker, &UpdateManager::downloadFinished, this, [checker, this]() {
+        const auto ret = QMessageBox::information(
+            this, tr("Download Finished"),
+            tr("Update downloaded. Would you like to restart and install now?"),
+            QMessageBox::Yes | QMessageBox::No);
+        if (ret == QMessageBox::Yes) {
+            checker->installAndExit();
+        } else {
+            checker->deleteLater();
+        }
+    });
+    connect(checker, &UpdateManager::errorOccurred, this, [this, checker](const QString& err) {
+        QMessageBox::warning(this, tr("Update Error"), tr("Failed to check for updates:\n%1").arg(err));
+        checker->deleteLater();
+    });
+    checker->checkForUpdates();
 }
 
 void MainWindow::onRegisterCompoundTriggered()

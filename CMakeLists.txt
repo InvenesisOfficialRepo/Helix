@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(InvenesisMergeApp LANGUAGES CXX C)
+project(Helix LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -198,14 +198,14 @@ set(APP_SOURCES
     src/widgets_core/ui/dissolvebottledialog.cpp
     src/widgets_core/ui/dissolvebottledialog.h
 
-    src/widgets_core/update_mangement/UpdateChecker.cpp
-    src/widgets_core/update_mangement/UpdateChecker.h
+    src/widgets_core/update_mangement/UpdateManager.cpp
+    src/widgets_core/update_mangement/UpdateManager.h
 )
 
 # Unify both QML Dashboard resources and traditional QWidget resource.qrc
-qt_add_executable(InvenesisMergeApp ${APP_SOURCES} resources.qrc)
+qt_add_executable(Helix ${APP_SOURCES} resources.qrc)
 
-target_include_directories(InvenesisMergeApp PRIVATE
+target_include_directories(Helix PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/qml_core
     ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core
     ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/ui
@@ -227,7 +227,7 @@ endif()
 # Define QML Singletons
 set_source_files_properties(qml/Style.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
-qt_add_qml_module(InvenesisMergeApp
+qt_add_qml_module(Helix
     URI TestRequests
     VERSION 1.0
     RESOURCE_PREFIX /TestRequests
@@ -287,7 +287,7 @@ qt_add_qml_module(InvenesisMergeApp
 )
 
 # Link libraries
-target_link_libraries(InvenesisMergeApp PRIVATE
+target_link_libraries(Helix PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
@@ -303,7 +303,7 @@ target_link_libraries(InvenesisMergeApp PRIVATE
 )
 
 # Compile flags
-target_compile_definitions(InvenesisMergeApp PRIVATE USE_QXLSX=1)
+target_compile_definitions(Helix PRIVATE USE_QXLSX=1)
 
 # Compile as pure Windows GUI application (no console popup window)
-set_target_properties(InvenesisMergeApp PROPERTIES WIN32_EXECUTABLE TRUE)
+set_target_properties(Helix PROPERTIES WIN32_EXECUTABLE TRUE)

@@ -11,6 +11,7 @@
 #include "database/DbConfig.h"
 #include "services/Logger.h"
 #include "ThemeManager.h"
+#include "update_mangement/UpdateManager.h"
 
 #include <QSettings>
 
@@ -27,7 +28,7 @@ int main(int argc, char *argv[])
     // Set Application Details
     QCoreApplication::setOrganizationName("Invenesis");
     QCoreApplication::setOrganizationDomain("invenesis.com");
-    QCoreApplication::setApplicationName("Invenesis Master Hub");
+    QCoreApplication::setApplicationName("Helix");
     QCoreApplication::setApplicationVersion("1.0.0");
 
     // Load Window Icon
@@ -70,6 +71,10 @@ int main(int argc, char *argv[])
     // Instantiate and register AppContext singleton
     AppContext appContext;
     qmlRegisterSingletonInstance("TestRequests", 1, 0, "App", &appContext);
+
+    // Instantiate and register UpdateManager singleton
+    UpdateManager updateManager;
+    qmlRegisterSingletonInstance("TestRequests", 1, 0, "UpdateManager", &updateManager);
 
     // Load QML from the compiled QML module
     engine.loadFromModule("TestRequests", "Main");

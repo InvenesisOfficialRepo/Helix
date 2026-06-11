@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import TestRequests 1.0
 import "../components"
 import "../controls"
@@ -8,6 +9,24 @@ import "../controls"
 Page {
     id: root
     focus: true
+
+    Component.onCompleted: {
+        UpdateManager.checkForUpdates()
+    }
+
+    Connections {
+        target: UpdateManager
+
+        function onUpdateAvailable(latestVersion, notes) {
+            updateOverlay.latestVersion = latestVersion
+            updateOverlay.releaseNotes = notes
+            updateOverlay.visible = true
+        }
+
+        function onErrorOccurred(errorMessage) {
+            console.error("Helix Update Error:", errorMessage)
+        }
+    }
 
     background: Rectangle {
         color: Style.bg
@@ -344,5 +363,200 @@ Page {
         }
 
         Item { Layout.fillHeight: true } // bottom spacer
+    }
+
+    // ---------------- Update overlay ----------------
+    Rectangle {
+        id: updateOverlay
+        anchors.fill: parent
+        color: Qt.rgba(0, 0, 0, 0.75) // dark semi-transparent backdrop
+        visible: false // controlled by signals
+        z: 9999 // ensure it sits on top of everything
+
+        property string latestVersion: ""
+        property string releaseNotes: ""
+
+        // Prevent mouse events from leaking to items underneath
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.AllButtons
+        }
+
+        // The Glassmorphic Modal Box
+        Rectangle {
+            anchors.centerIn: parent
+            width: 550
+            height: 420
+            radius: Style.radiusLg
+            color: Style.panel
+            border.color: Style.teal
+            border.width: 1
+
+            // Subtle glow
+            layer.enabled: true
+            layer.effect: DropShadow {
+                transparentBorder: true
+                horizontalOffset: 0
+                verticalOffset: 4
+                radius: 20
+                samples: 25
+                color: Qt.rgba(Style.teal.r, Style.teal.g, Style.teal.b, 0.25)
+            }
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: Style.padXl
+                spacing: Style.padLg
+
+                // Header
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Style.pad
+
+                    Label {
+                        text: "\ue89c" // Download/Update arrow icon (Material Symbols hex)
+                        font.family: Style.iconFontFamily
+                        font.pixelSize: Style.fontXl + 4
+                        color: Style.teal
+                    }
+
+                    ColumnLayout {
+                        spacing: 2
+                        Label {
+                            text: "New Update Available"
+                            font.family: Style.fontPrimaryBold
+                            font.pixelSize: Style.fontLg
+                            color: Style.text
+                        }
+                        Label {
+                            text: "Version " + updateOverlay.latestVersion + " is ready for installation"
+                            font.family: Style.fontSecondary
+                            font.pixelSize: Style.fontXs
+                            color: Style.subText
+                        }
+                    }
+                }
+
+                // Divider
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: Style.divider
+                }
+
+                // Release Notes Scrollable Area
+                ScrollView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+
+                    TextArea {
+                        text: updateOverlay.releaseNotes
+                        textFormat: TextEdit.RichText
+                        readOnly: true
+                        selectByMouse: true
+                        wrapMode: TextEdit.Wrap
+                        color: Style.text
+                        font.family: Style.fontSecondary
+                        font.pixelSize: Style.fontSm + 1
+                        background: null
+                        leftPadding: 0
+                        topPadding: 0
+                    }
+                }
+
+                // Divider
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: Style.divider
+                }
+
+                // Download Progress (visible when downloading)
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    visible: UpdateManager.isDownloading
+                    spacing: Style.padXs
+
+                    // Custom styled progress bar
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 6
+                        color: Style.panel2
+                        radius: 3
+
+                        Rectangle {
+                            height: parent.height
+                            width: parent.width * UpdateManager.downloadProgress
+                            color: Style.teal
+                            radius: 3
+                            
+                            Behavior on width {
+                                NumberAnimation { duration: 150 }
+                            }
+                        }
+                    }
+
+                    Label {
+                        text: "Downloading update... " + Math.round(UpdateManager.downloadProgress * 100) + "%"
+                        font.family: Style.fontSecondary
+                        font.pixelSize: Style.fontXs
+                        color: Style.subText
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                }
+
+                // Action Buttons
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Style.padLg
+                    visible: !UpdateManager.isDownloading
+
+                    // Custom Secondary button using standard Rectangle + MouseArea
+                    Rectangle {
+                        id: skipBtn
+                        implicitWidth: 120
+                        implicitHeight: 38
+                        radius: 19
+                        color: skipMouse.containsMouse ? Style.panel2 : "transparent"
+                        border.color: Style.border
+                        border.width: 1
+
+                        Label {
+                            anchors.centerIn: parent
+                            text: "Skip for Now"
+                            font.family: Style.fontPrimaryBold
+                            font.pixelSize: Style.fontSm + 1
+                            color: Style.text
+                        }
+
+                        MouseArea {
+                            id: skipMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: updateOverlay.visible = false
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true } // spacer
+
+                    // Primary Action Button (Using app's custom Button)
+                    Button {
+                        id: updateBtn
+                        text: UpdateManager.downloadProgress === 1.0 ? "Restart & Install" : "Update Now"
+                        implicitHeight: 38
+                        implicitWidth: 160
+                        onClicked: {
+                            if (UpdateManager.downloadProgress === 1.0) {
+                                UpdateManager.installAndExit()
+                            } else {
+                                UpdateManager.startDownload()
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
