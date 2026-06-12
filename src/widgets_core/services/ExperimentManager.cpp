@@ -253,9 +253,9 @@ ExperimentManager::TestPlatesResult ExperimentManager::calculateTestPlates(int d
             stdWells << w;
             dmsoWells.removeOne(w);
         }
-        result.qcPlate[stdName] = stdWells;
+        result.qcPlate[stdName].append(stdWells);
     }
-    result.qcPlate["DMSO"] = dmsoWells;
+    result.qcPlate["DMSO"].append(dmsoWells);
 
     if (is384Test) {
         QStringList rows384 = {"A", "B", "C", "D", "E", "F", "G", "H",

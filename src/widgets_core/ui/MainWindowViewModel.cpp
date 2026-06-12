@@ -35,6 +35,8 @@ QStringList MainWindowViewModel::getVisibleTables() const {
     } else if (m_userRole == "userplus") {
         filteredTables = allTables;
         filteredTables.removeOne("users");
+        filteredTables.removeOne("clients");
+        filteredTables.removeOne("client_users");
     } else if (m_userRole == "user") {
         filteredTables = {"test_requests", "bottles", "solutions"};
     }
@@ -43,6 +45,11 @@ QStringList MainWindowViewModel::getVisibleTables() const {
 }
 
 void MainWindowViewModel::loadTable(const QString& tableName) {
+    if (!getVisibleTables().contains(tableName)) {
+        qWarning() << "Unauthorized table load attempt:" << tableName;
+        return;
+    }
+
     m_tableModel = std::make_unique<QSqlTableModel>(this);
     m_tableModel->setTable(tableName);
     m_tableModel->select();
