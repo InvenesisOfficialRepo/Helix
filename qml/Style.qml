@@ -20,26 +20,14 @@ QtObject {
     // =========================================================
     // Fonts
     // =========================================================
-    readonly property var _senRegular: FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/Sen-Regular.ttf" }
-    readonly property var _senBold:    FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/Sen-Bold.ttf" }
+    readonly property string fontPrimary:        "Sen"
+    readonly property string fontPrimaryBold:    "Sen"
 
-    readonly property var _mavenRegular: FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/MavenPro-Regular.ttf" }
-    readonly property var _mavenBold:    FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/MavenPro-Bold.ttf" }
+    readonly property string fontSecondary:      "Maven Pro"
+    readonly property string fontSecondaryBold:  "Maven Pro"
 
-    readonly property var _iconFont: FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/MaterialSymbolsOutlined.ttf" }
+    readonly property string iconFontFamily:     "Material Symbols Outlined"
 
-    readonly property string fontPrimary:
-        (_senRegular.name && _senRegular.name.length > 0) ? _senRegular.name : Qt.application.font.family
-    readonly property string fontPrimaryBold:
-        (_senBold.name && _senBold.name.length > 0) ? _senBold.name : fontPrimary
-
-    readonly property string fontSecondary:
-        (_mavenRegular.name && _mavenRegular.name.length > 0) ? _mavenRegular.name : fontPrimary
-    readonly property string fontSecondaryBold:
-        (_mavenBold.name && _mavenBold.name.length > 0) ? _mavenBold.name : fontSecondary
-
-    readonly property string iconFontFamily:
-        (_iconFont.name && _iconFont.name.length > 0) ? _iconFont.name : fontPrimary
 
     // Type scale
     readonly property int fontXs: 11

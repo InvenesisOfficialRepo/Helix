@@ -5,6 +5,7 @@
 #include <QIcon>
 #include <QFile>
 #include <QMessageBox>
+#include <QFontDatabase>
 
 #include "app/AppContext.h"
 #include "database/Database.h"
@@ -25,14 +26,36 @@ int main(int argc, char *argv[])
     qInfo() << "========================================";
     qInfo() << "Invenesis Unified Merge Application started";
 
+    // Register custom fonts globally from Qt resources
+    QList<QString> fontPaths = {
+        ":/qt/qml/TestRequests/qml/fonts/Sen-Regular.ttf",
+        ":/qt/qml/TestRequests/qml/fonts/Sen-Bold.ttf",
+        ":/qt/qml/TestRequests/qml/fonts/MavenPro-Regular.ttf",
+        ":/qt/qml/TestRequests/qml/fonts/MavenPro-Bold.ttf",
+        ":/qt/qml/TestRequests/qml/fonts/MaterialSymbolsOutlined.ttf",
+        ":/qt/qml/TestRequests/qml/fonts/Inter-VariableFont.ttf",
+        ":/qt/qml/TestRequests/qml/fonts/Inter-Italic-VariableFont.ttf"
+    };
+
+    for (const QString &path : fontPaths) {
+        int id = QFontDatabase::addApplicationFont(path);
+        if (id == -1) {
+            qWarning() << "Failed to load custom font from resource:" << path;
+        } else {
+            qInfo() << "Successfully loaded custom font from resource:" << path 
+                    << "with families:" << QFontDatabase::applicationFontFamilies(id);
+        }
+    }
+
     // Set Application Details
     QCoreApplication::setOrganizationName("Invenesis");
     QCoreApplication::setOrganizationDomain("invenesis.com");
     QCoreApplication::setApplicationName("Helix");
-    QCoreApplication::setApplicationVersion("1.0.3");
+    QCoreApplication::setApplicationVersion("1.0.4");
 
     // Load Window Icon
     QIcon appIcon(":/icons/resources/icons/Sphere.png");
+
     app.setWindowIcon(appIcon);
 
     // Set QML Quick controls style
