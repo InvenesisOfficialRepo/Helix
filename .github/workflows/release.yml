@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: D:\a\Helix\Qt
-          key: ${{ runner.os }}-qt-6.8.3-msvc2022-graphs-multimedia-quick3d-v2
+          key: ${{ runner.os }}-qt-6.8.3-msvc2022-graphs-multimedia-quick3d-qt5compat-v2
 
       # 5. Install Qt
       - name: Install Qt
@@ -45,13 +45,13 @@ jobs:
           python -m pip install --upgrade aqtinstall
           $qtInstallPath = "D:\a\Helix\Qt"
           echo "Attempting to install Qt via dotsrc mirror..."
-          python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia qtquick3d qtshadertools qtquicktimeline --base https://mirrors.dotsrc.org/qtproject
+          python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia qtquick3d qtshadertools qtquicktimeline qt5compat --base https://mirrors.dotsrc.org/qtproject
           if ($LASTEXITCODE -ne 0) {
             echo "Dotsrc mirror failed, attempting constant mirror..."
-            python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia qtquick3d qtshadertools qtquicktimeline --base https://qt.mirror.constant.com
+            python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia qtquick3d qtshadertools qtquicktimeline qt5compat --base https://qt.mirror.constant.com
             if ($LASTEXITCODE -ne 0) {
               echo "Constant mirror failed, attempting fallback to default redirection..."
-              python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia qtquick3d qtshadertools qtquicktimeline
+              python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia qtquick3d qtshadertools qtquicktimeline qt5compat
               if ($LASTEXITCODE -ne 0) {
                 exit $LASTEXITCODE
               }

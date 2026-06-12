@@ -27,6 +27,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS
     QuickControls2
     Graphs
     Multimedia
+    Core5Compat
 )
 
 qt_standard_project_setup()
@@ -298,6 +299,7 @@ target_link_libraries(Helix PRIVATE
     Qt6::QuickControls2
     Qt6::Graphs
     Qt6::Multimedia
+    Qt6::Core5Compat
     openwall_crypt
     QXlsx
 )
