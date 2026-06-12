@@ -16,6 +16,7 @@ Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 SetupIconFile=resources\icons\application.ico
+ChangesEnvironment=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -37,3 +38,45 @@ Name: "{autodesktop}\Helix"; Filename: "{app}\Helix.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\Helix.exe"; Description: "{cm:LaunchProgram,Helix}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+var
+  DbPage: TInputQueryWizardPage;
+
+procedure InitializeWizard;
+begin
+  // Create a custom page for database settings right afterwpSelectDir
+  DbPage := CreateInputQueryPage(wpSelectDir,
+    'Database Configuration', 'Please enter your PostgreSQL connection details',
+    'These settings will be saved as environment variables for Helix. If they already exist on your system, they will be loaded as defaults.');
+
+  // Add input fields (label, password mask)
+  DbPage.Add('Database Host (INV_DB_HOST):', False);
+  DbPage.Add('Database Name (INV_DB_NAME):', False);
+  DbPage.Add('Database User (INV_DB_USER):', False);
+  DbPage.Add('Database Password (INV_DB_PASSWORD):', True);
+  DbPage.Add('Database Port (INV_DB_PORT):', False);
+
+  // Load existing environment variables as defaults if available
+  DbPage.Values[0] := GetEnv('INV_DB_HOST');
+  DbPage.Values[1] := GetEnv('INV_DB_NAME');
+  DbPage.Values[2] := GetEnv('INV_DB_USER');
+  DbPage.Values[3] := GetEnv('INV_DB_PASSWORD');
+  DbPage.Values[4] := GetEnv('INV_DB_PORT');
+  
+  if DbPage.Values[4] = '' then
+    DbPage.Values[4] := '5432';
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    // Save the values to the user environment registry key (broadcasts change due to ChangesEnvironment=yes)
+    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_HOST', DbPage.Values[0]);
+    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_NAME', DbPage.Values[1]);
+    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_USER', DbPage.Values[2]);
+    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_PASSWORD', DbPage.Values[3]);
+    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_PORT', DbPage.Values[4]);
+  end;
+end;
