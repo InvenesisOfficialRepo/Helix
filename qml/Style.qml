@@ -20,13 +20,13 @@ QtObject {
     // =========================================================
     // Fonts
     // =========================================================
-    readonly property var _senRegular: FontLoader { source: "fonts/Sen-Regular.ttf" }
-    readonly property var _senBold:    FontLoader { source: "fonts/Sen-Bold.ttf" }
+    readonly property var _senRegular: FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/Sen-Regular.ttf" }
+    readonly property var _senBold:    FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/Sen-Bold.ttf" }
 
-    readonly property var _mavenRegular: FontLoader { source: "fonts/MavenPro-Regular.ttf" }
-    readonly property var _mavenBold:    FontLoader { source: "fonts/MavenPro-Bold.ttf" }
+    readonly property var _mavenRegular: FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/MavenPro-Regular.ttf" }
+    readonly property var _mavenBold:    FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/MavenPro-Bold.ttf" }
 
-    readonly property var _iconFont: FontLoader { source: "fonts/MaterialSymbolsOutlined.ttf" }
+    readonly property var _iconFont: FontLoader { source: "qrc:/qt/qml/TestRequests/qml/fonts/MaterialSymbolsOutlined.ttf" }
 
     readonly property string fontPrimary:
         (_senRegular.name && _senRegular.name.length > 0) ? _senRegular.name : Qt.application.font.family
