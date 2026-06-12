@@ -33,6 +33,7 @@ jobs:
           arch: 'win64_msvc2022_64'
           modules: 'qtgraphs qtmultimedia'
           cache: 'true'
+          extra: '--base https://mirrors.dotsrc.org/qtproject'
 
       # 4. Setup Inno Setup
       - name: Setup Inno Setup
