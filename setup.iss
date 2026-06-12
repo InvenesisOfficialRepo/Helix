@@ -17,6 +17,7 @@ SolidCompression=yes
 WizardStyle=modern
 SetupIconFile=resources\icons\application.ico
 ChangesEnvironment=yes
+PrivilegesRequired=admin
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -72,11 +73,11 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
   begin
-    // Save the values to the user environment registry key (broadcasts change due to ChangesEnvironment=yes)
-    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_HOST', DbPage.Values[0]);
-    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_NAME', DbPage.Values[1]);
-    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_USER', DbPage.Values[2]);
-    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_PASSWORD', DbPage.Values[3]);
-    RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'INV_DB_PORT', DbPage.Values[4]);
+    // Save the values to the system-wide environment registry key (broadcasts change due to ChangesEnvironment=yes)
+    RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'INV_DB_HOST', DbPage.Values[0]);
+    RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'INV_DB_NAME', DbPage.Values[1]);
+    RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'INV_DB_USER', DbPage.Values[2]);
+    RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'INV_DB_PASSWORD', DbPage.Values[3]);
+    RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'INV_DB_PORT', DbPage.Values[4]);
   end;
 end;
