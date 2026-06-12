@@ -19,7 +19,6 @@ set(QT_NO_PRIVATE_MODULE_WARNING ON)
 find_package(Qt6 6.5 REQUIRED COMPONENTS
     Core
     Gui
-    GuiPrivate
     Widgets
     Sql
     Network
