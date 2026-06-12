@@ -9,12 +9,12 @@ CustomProxyModel::CustomProxyModel(QObject *parent)
 
 void CustomProxyModel::setFilter1(const QString &text, int column)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     beginFilterChange();
 #endif
     filterText1 = text;
     filterColumn1 = column;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     endFilterChange();
 #else
     invalidateFilter();
@@ -23,12 +23,12 @@ void CustomProxyModel::setFilter1(const QString &text, int column)
 
 void CustomProxyModel::setFilter2(const QString &text, int column)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     beginFilterChange();
 #endif
     filterText2 = text;
     filterColumn2 = column;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     endFilterChange();
 #else
     invalidateFilter();
@@ -37,11 +37,11 @@ void CustomProxyModel::setFilter2(const QString &text, int column)
 
 void CustomProxyModel::setHideDone(bool hide)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     beginFilterChange();
 #endif
     hideDone = hide;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     endFilterChange();
 #else
     invalidateFilter();
@@ -50,11 +50,11 @@ void CustomProxyModel::setHideDone(bool hide)
 
 void CustomProxyModel::setDoneColumn(int column)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     beginFilterChange();
 #endif
     doneColumn = column;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     endFilterChange();
 #else
     invalidateFilter();
