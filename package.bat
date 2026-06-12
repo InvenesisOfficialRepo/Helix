@@ -21,16 +21,16 @@ echo.
 
 echo [3/5] Copying Helix.exe and PostgreSQL DLLs to dist...
 copy /Y build\Desktop_Qt_6_11_1_MSVC2022_64bit-Release\Helix.exe dist\Helix.exe
-if exist "C:\Program Files\PostgreSQL\17\bin" (
-    echo Copying PostgreSQL 17 DLLs...
-    copy /Y "C:\Program Files\PostgreSQL\17\bin\libpq.dll" dist\
-    copy /Y "C:\Program Files\PostgreSQL\17\bin\libcrypto-3-x64.dll" dist\
-    copy /Y "C:\Program Files\PostgreSQL\17\bin\libssl-3-x64.dll" dist\
-    copy /Y "C:\Program Files\PostgreSQL\17\bin\libintl-9.dll" dist\
-    copy /Y "C:\Program Files\PostgreSQL\17\bin\libiconv-2.dll" dist\
-    copy /Y "C:\Program Files\PostgreSQL\17\bin\libwinpthread-1.dll" dist\
+if exist "resources\dlls" (
+    echo Copying PostgreSQL DLLs from resources...
+    copy /Y "resources\dlls\libpq.dll" dist\
+    copy /Y "resources\dlls\libcrypto-3-x64.dll" dist\
+    copy /Y "resources\dlls\libssl-3-x64.dll" dist\
+    copy /Y "resources\dlls\libintl-9.dll" dist\
+    copy /Y "resources\dlls\libiconv-2.dll" dist\
+    copy /Y "resources\dlls\libwinpthread-1.dll" dist\
 ) else (
-    echo [WARNING] PostgreSQL 17 bin directory not found. PostgreSQL DLLs were not copied.
+    echo [ERROR] resources\dlls directory not found. PostgreSQL DLLs were not copied.
 )
 echo.
 

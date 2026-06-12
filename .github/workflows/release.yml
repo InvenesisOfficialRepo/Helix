@@ -1,0 +1,88 @@
+name: Build and Release Helix
+
+on:
+  push:
+    branches:
+      - main  # Triggered when commits are pushed or merged into main
+
+permissions:
+  contents: write  # Allows the runner to create releases and upload assets
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      # 1. Clone the repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # 2. Setup MSVC compiler
+      - name: Install MSVC Compiler
+        uses: microsoft/setup-msbuild@v2
+
+      # 3. Setup Qt framework (Version 6.11.1)
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.11.1'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+
+      # 4. Setup Inno Setup
+      - name: Setup Inno Setup
+        run: choco install innosetup -y
+
+      # 5. Configure with CMake
+      - name: Configure CMake
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+      # 6. Build the Helix.exe binary
+      - name: Build Application
+        run: |
+          cmake --build build --config Release
+
+      # 7. Prepare the deployment distribution
+      - name: Prepare dist directory
+        shell: powershell
+        run: |
+          mkdir dist
+          # Copy Helix.exe
+          copy build\Desktop_Qt_6_11_1_MSVC2022_64bit-Release\Helix.exe dist\Helix.exe
+          # Copy portable PostgreSQL DLLs
+          copy resources\dlls\* dist\
+
+      # 8. Deploy Qt dependencies
+      - name: Run windeployqt
+        run: |
+          windeployqt --qmldir qml dist\Helix.exe
+
+      # 9. Build the installer using Inno Setup
+      - name: Compile Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+
+      # 10. Extract the version from version.json
+      - name: Extract Version Info
+        id: get_version
+        shell: powershell
+        run: |
+          $version = (Get-Content version.json | ConvertFrom-Json).latest_version
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      # 11. Create a GitHub release and upload the installer
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Helix Release v${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            Helix_Setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
