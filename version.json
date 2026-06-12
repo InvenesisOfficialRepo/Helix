@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.0.0",
-  "release_notes": "<h3>Helix Launcher 1.0.0</h3><ul><li>Renamed application to Helix.</li><li>Added open-source GPLv3 license.</li><li>Implemented game-launcher style asynchronous update manager.</li><li>Designed glassmorphic update dialog in QML.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.0.0/Helix_Setup.exe"
+  "latest_version": "1.0.3",
+  "release_notes": "<h3>Helix Launcher 1.0.3</h3><ul><li>Fixed critical Font bug in the QML app.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.0.3/Helix_Setup.exe"
 }
