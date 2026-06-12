@@ -1,5 +1,6 @@
 {
-  "latest_version": "1.0.3",
-  "release_notes": "<h3>Helix Launcher 1.0.3</h3><ul><li>Fixed critical Font bug in the QML app.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.0.3/Helix_Setup.exe"
+  "latest_version": "1.0.4",
+  "release_notes": "<h3>Helix Launcher 1.0.4</h3><ul><li>Successfully resolved custom font fallback issue globally on all target PCs.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.0.4/Helix_Setup.exe"
 }
+
