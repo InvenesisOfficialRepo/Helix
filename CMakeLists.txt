@@ -200,6 +200,7 @@ set(APP_SOURCES
 
     src/widgets_core/update_mangement/UpdateManager.cpp
     src/widgets_core/update_mangement/UpdateManager.h
+    resources.rc
 )
 
 # Unify both QML Dashboard resources and traditional QWidget resource.qrc
