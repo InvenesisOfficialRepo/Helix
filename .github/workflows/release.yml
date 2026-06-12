@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: D:\a\Helix\Qt
-          key: ${{ runner.os }}-qt-6.11.1-msvc2022-graphs-multimedia-v1
+          key: ${{ runner.os }}-qt-6.8.3-msvc2022-graphs-multimedia-v1
 
       # 5. Install Qt
       - name: Install Qt
@@ -45,13 +45,13 @@ jobs:
           python -m pip install --upgrade aqtinstall
           $qtInstallPath = "D:\a\Helix\Qt"
           echo "Attempting to install Qt via dotsrc mirror..."
-          python -m aqt install-qt windows desktop 6.11.1 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia --base https://mirrors.dotsrc.org/qtproject
+          python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia --base https://mirrors.dotsrc.org/qtproject
           if ($LASTEXITCODE -ne 0) {
             echo "Dotsrc mirror failed, attempting constant mirror..."
-            python -m aqt install-qt windows desktop 6.11.1 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia --base https://qt.mirror.constant.com
+            python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia --base https://qt.mirror.constant.com
             if ($LASTEXITCODE -ne 0) {
               echo "Constant mirror failed, attempting fallback to default redirection..."
-              python -m aqt install-qt windows desktop 6.11.1 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia
+              python -m aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 --outputdir $qtInstallPath --modules qtgraphs qtmultimedia
               if ($LASTEXITCODE -ne 0) {
                 exit $LASTEXITCODE
               }
@@ -63,10 +63,10 @@ jobs:
         shell: powershell
         run: |
           $qtInstallPath = "D:\a\Helix\Qt"
-          $qtBinPath = "$qtInstallPath\6.11.1\msvc2022_64\bin"
+          $qtBinPath = "$qtInstallPath\6.8.3\msvc2022_64\bin"
           echo "$qtBinPath" >> $env:GITHUB_PATH
-          echo "QT_PATH=$qtInstallPath\6.11.1\msvc2022_64" >> $env:GITHUB_ENV
-          echo "CMAKE_PREFIX_PATH=$qtInstallPath\6.11.1\msvc2022_64" >> $env:GITHUB_ENV
+          echo "QT_PATH=$qtInstallPath\6.8.3\msvc2022_64" >> $env:GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$qtInstallPath\6.8.3\msvc2022_64" >> $env:GITHUB_ENV
 
       # 7. Setup Inno Setup
       - name: Setup Inno Setup
