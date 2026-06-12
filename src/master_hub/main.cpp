@@ -99,8 +99,8 @@ int main(int argc, char *argv[])
     UpdateManager updateManager;
     qmlRegisterSingletonInstance("TestRequests", 1, 0, "UpdateManager", &updateManager);
 
-    // Load QML from the compiled QML module
-    engine.loadFromModule("TestRequests", "Main");
+    // Load QML from the compiled QML resources
+    engine.load(QUrl(QStringLiteral("qrc:/qt/qml/TestRequests/qml/Main.qml")));
 
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Failed to load QML root objects";
