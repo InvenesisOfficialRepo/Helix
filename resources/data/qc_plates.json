@@ -1,12 +1,68 @@
 {
-    "Default QC Plate": {
+    "Ivermectin 8000": {
         "C": {
-            "standard": "Standard Compound A",
-            "conc": 1000
+            "standard": "Ivermectin",
+            "conc": 8000
         },
         "F": {
-            "standard": "Standard Compound B",
-            "conc": 1000
+            "standard": "Ivermectin",
+            "conc": 8000
+        }
+    },
+
+        "Ivermectin 20000": {
+        "C": {
+            "standard": "Ivermectin",
+            "conc": 20000
+        },
+        "F": {
+            "standard": "Ivermectin",
+            "conc": 20000
+        }
+    },
+
+        "Emodepsid 8000": {
+        "C": {
+            "standard": "Emodepsid",
+            "conc": 8000
+        },
+        "F": {
+            "standard": "Emodepsid",
+            "conc": 8000
+        }
+    },
+
+            "Emodepsid 20000": {
+        "C": {
+            "standard": "Emodepsid",
+            "conc": 20000
+        },
+        "F": {
+            "standard": "Emodepsid",
+            "conc": 20000
+        }
+    },
+
+        "Fipronil 8000": {
+        "C": {
+            "standard": "Fipronil",
+            "conc": 8000
+        },
+        "F": {
+            "standard": "Fipronil",
+            "conc": 8000
+        }
+    },
+
+            "Fipronil 20000": {
+        "C": {
+            "standard": "Fipronil",
+            "conc": 20000
+        },
+        "F": {
+            "standard": "Fipronil",
+            "conc": 20000
         }
     }
+
 }
