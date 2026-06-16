@@ -88,6 +88,10 @@ void RegisterCompoundDialog::parseAdditionalNotes()
     }
     if (m_clientStockConcUnit.isEmpty()) {
         m_clientStockConcUnit = "mM";
+    } else if (m_clientStockConcUnit.compare("uM", Qt::CaseInsensitive) == 0 ||
+               m_clientStockConcUnit.compare("µM", Qt::CaseInsensitive) == 0 ||
+               m_clientStockConcUnit.compare("μM", Qt::CaseInsensitive) == 0) {
+        m_clientStockConcUnit = QString::fromUtf8("\xC2\xB5M");
     }
 }
 
@@ -157,7 +161,7 @@ void RegisterCompoundDialog::setupUI()
     solConcSpinBox->setDecimals(3);
     solConcSpinBox->setValue(m_clientStockConc);
     solConcUnitComboBox = new QComboBox(solutionTabWidget);
-    solConcUnitComboBox->addItems(QStringList() << "mM" << "uM" << "nM" << "M");
+    solConcUnitComboBox->addItems(QStringList() << "mM" << QString::fromUtf8("\xC2\xB5M") << "nM" << "M" << "ppm");
     solConcUnitComboBox->setCurrentText(m_clientStockConcUnit);
     concLayout->addWidget(solConcSpinBox);
     concLayout->addWidget(solConcUnitComboBox);

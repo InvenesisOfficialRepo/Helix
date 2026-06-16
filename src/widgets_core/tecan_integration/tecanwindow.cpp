@@ -1030,13 +1030,14 @@ void TecanWindow::generateGWLFromJson(const QJsonObject &experimentJson) {
     }
 
     // Mark related test requests as done
-    QString dbErr;
-    if (!markTestRequestsDoneFromJson(experimentJson, &dbErr)) {
-      showWarning(
-          this, tr("Database Update"),
-          tr("GWL was generated, but failed to mark test requests as done:\n%1")
-              .arg(dbErr));
-    }
+    // --- REMOVED BY DASHBOARD APP FIX ---
+    // QString dbErr;
+    // if (!markTestRequestsDoneFromJson(experimentJson, &dbErr)) {
+    //   showWarning(
+    //       this, tr("Database Update"),
+    //       tr("GWL was generated, but failed to mark test requests as done:\n%1")
+    //           .arg(dbErr));
+    // }
 
     showInfo(this, tr("Success"), tr("Files written to:\n%1").arg(outDir));
   });

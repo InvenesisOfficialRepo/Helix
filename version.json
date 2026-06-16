@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.0.7",
-  "release_notes": "<h3>Helix Launcher 1.0.7</h3><ul><li>Fixed QC plate row C display bug in Tecan view.</li><li>Restricted users, clients, and client_users database tables to admin role.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.0.7/Helix_Setup.exe"
+  "latest_version": "1.0.8",
+  "release_notes": "<h3>Helix Launcher 1.0.8</h3><ul><li>Filter out already registered compounds from tracked list.</li><li>Fix concentration unit validation error in compound registration and add ppm unit.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.0.8/Helix_Setup.exe"
 }

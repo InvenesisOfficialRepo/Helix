@@ -52,6 +52,14 @@ void MainWindowViewModel::loadTable(const QString& tableName) {
 
     m_tableModel = std::make_unique<QSqlTableModel>(this);
     m_tableModel->setTable(tableName);
+
+    if (tableName == "tracked_test_compounds") {
+        m_tableModel->setFilter(
+            "UPPER(compound_name) NOT IN (SELECT UPPER(product_name) FROM public.solutions WHERE product_name IS NOT NULL) "
+            "AND UPPER(compound_name) NOT IN (SELECT UPPER(product_name) FROM public.bottles WHERE product_name IS NOT NULL)"
+        );
+    }
+
     m_tableModel->select();
 
     m_proxyModel->setSourceModel(m_tableModel.get());
