@@ -127,8 +127,8 @@
         "source": "in house"
       },
       "emodepside": {
-        "top_dose_uM": 1000.0,
-        "ec50_uM": 10.0,
+        "top_dose_uM": 250.0,
+        "ec50_uM": 0.5,
         "source": "in house"
       },
       "fipronil": {
@@ -147,8 +147,8 @@
         "source": "in house"
       },
       "ivermectin": {
-        "top_dose_uM": 100.0,
-        "ec50_uM": 0.3,
+        "top_dose_uM": 250.0,
+        "ec50_uM": 0.01,
         "source": "in house"
       },
       "levamisol": {
@@ -176,17 +176,17 @@
   "INV-T-006": {
     "concentration_unit": "uM",
     "is_tarsal": false,
-    "vol_from_daughter_µl": 0.75,
+    "vol_from_daughter_µl": 0.2,
     "total_well_vol_µl": 16.0,
     "standards": {
       "dicyclanil": {
         "top_dose_uM": 1000.0,
-        "ec50_uM": 10.0,
+        "ec50_uM": 1.6,
         "source": "in house"
       },
       "emodepside": {
-        "top_dose_uM": 1000.0,
-        "ec50_uM": 10.0,
+        "top_dose_uM": 250.0,
+        "ec50_uM": 1.6,
         "source": "in house"
       },
       "fipronil": {
@@ -205,8 +205,8 @@
         "source": "in house"
       },
       "ivermectin": {
-        "top_dose_uM": 100.0,
-        "ec50_uM": 0.3,
+        "top_dose_uM": 250.0,
+        "ec50_uM": 10.0,
         "source": "in house"
       },
       "levamisol": {
