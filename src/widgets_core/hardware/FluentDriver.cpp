@@ -220,8 +220,14 @@ bool FluentDriver::generate(const QJsonObject &exp,
   double stdDf = df;
   if (!testId.isEmpty() && !stdName.isEmpty()) {
       const auto catEntry = catalogue.value(testId).toObject();
-      const auto stdSpecs = catEntry.value("standards").toObject();
-      const auto stdSpec  = stdSpecs.value(stdName).toObject();
+      const QJsonObject stdSpecs = catEntry.value("standards").toObject();
+      QJsonObject stdSpec;
+      for (const QString &key : stdSpecs.keys()) {
+          if (key.compare(stdName, Qt::CaseInsensitive) == 0) {
+              stdSpec = stdSpecs.value(key).toObject();
+              break;
+          }
+      }
 
       const double topDose = readDouble(stdSpec, "top_dose_uM", 0.0);
       const double ec50    = readDouble(stdSpec, "ec50_uM",     0.0);

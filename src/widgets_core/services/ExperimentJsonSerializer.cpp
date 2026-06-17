@@ -211,7 +211,13 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
     if (!stdName.isEmpty() && !testId.isEmpty()) {
         const QJsonObject catEntry = catalogue.value(testId).toObject();
         const QJsonObject stdSpecs = catEntry.value("standards").toObject();
-        const QJsonObject stdSpec  = stdSpecs.value(stdName).toObject();
+        QJsonObject stdSpec;
+        for (const QString &key : stdSpecs.keys()) {
+            if (key.compare(stdName, Qt::CaseInsensitive) == 0) {
+                stdSpec = stdSpecs.value(key).toObject();
+                break;
+            }
+        }
         if (stdSpec.isEmpty()) {
             qWarning() << "[WARN] No catalogue entry for standard" << stdName
                        << "in test" << testId
