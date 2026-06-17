@@ -218,7 +218,7 @@ bool FluentDriver::generate(const QJsonObject &exp,
 
   VolumePlanEntry stdVpe = vpe;
   double stdDf = df;
-  if (useMatrixStandard && !testId.isEmpty() && !stdName.isEmpty()) {
+  if (!testId.isEmpty() && !stdName.isEmpty()) {
       const auto catEntry = catalogue.value(testId).toObject();
       const auto stdSpecs = catEntry.value("standards").toObject();
       const auto stdSpec  = stdSpecs.value(stdName).toObject();
