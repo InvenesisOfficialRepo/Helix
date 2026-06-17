@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Invenesis");
     QCoreApplication::setOrganizationDomain("invenesis.com");
     QCoreApplication::setApplicationName("Helix");
-    QCoreApplication::setApplicationVersion("1.1.1");
+    QCoreApplication::setApplicationVersion("1.1.2");
 
     // Load Window Icon
     QIcon appIcon(":/icons/resources/icons/Sphere.png");

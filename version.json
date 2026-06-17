@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.1.1",
-  "release_notes": "<h3>Helix Launcher 1.1.1</h3><ul><li>Fix standard serial dilution curve for manually selected standards.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.1/Helix_Setup.exe"
+  "latest_version": "1.1.2",
+  "release_notes": "<h3>Helix Launcher 1.1.2</h3><ul><li>Fix standard serial dilution factor calculation overflow by dynamically inspecting standard chain length on plates.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.2/Helix_Setup.exe"
 }

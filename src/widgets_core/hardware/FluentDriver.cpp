@@ -252,7 +252,19 @@ bool FluentDriver::generate(const QJsonObject &exp,
               qWarning() << "[WARN] loadVolumePlan failed for standard:" << verr;
           }
 
-          const int stdNDil = std::max(2, numberOfDilutionsFromJson(exp));
+          int maxStdChainLen = std::max(2, numberOfDilutionsFromJson(exp));
+          const QJsonArray platesForStd = exp.value("daughter_plates").toArray();
+          for (int i = 0; i < platesForStd.size(); ++i) {
+              const QJsonObject plateObj = platesForStd.at(i).toObject();
+              const QJsonObject wells = plateObj.value("wells").toObject();
+              const auto chains = buildStandardChainsFromLayout(wells);
+              for (const auto &chain : chains) {
+                  if (chain.size() > maxStdChainLen) {
+                      maxStdChainLen = chain.size();
+                  }
+              }
+          }
+          const int stdNDil = maxStdChainLen;
           const double bottomDose = (ec50 * ec50) / topDose;
           stdDf = std::pow(topDose / bottomDose, 1.0 / (stdNDil - 1));
           qDebug() << "[INFO] Standard df:" << stdDf << "across" << stdNDil
