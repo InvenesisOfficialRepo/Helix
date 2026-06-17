@@ -155,7 +155,10 @@ bool FluentDriver::generate(const QJsonObject &exp,
   StandardSource selectedStandard;
   bool useMatrixStandard = false;
 
-  if (!stdName.isEmpty() && !availableStandards.isEmpty()) {
+  bool hasExplicitStd = !stdObj.value("Containerposition").toString().isEmpty() &&
+                        !stdObj.value("Containerbarcode").toString().isEmpty();
+
+  if (!hasExplicitStd && !stdName.isEmpty() && !availableStandards.isEmpty()) {
     double targetStdConc = 20000.0;
 
     const QJsonArray testRequests = exp.value("test_requests").toArray();
@@ -263,24 +266,32 @@ bool FluentDriver::generate(const QJsonObject &exp,
   // First well working volume = V_final + V_transfer.
   // DMSO and compound in first well must be scaled up to match the higher
   // working volume.
-  const double volMother = roundUp01(vpe.volMother);
-  const double transferVol =
+  double volMother = roundUp01(vpe.volMother);
+  double transferVol =
       roundNearest01(df > 1.0 ? vpe.volMother / (df - 1.0) : 0.0);
+  if (df > 1.0 && transferVol < 1.0) {
+      transferVol = 1.0;
+      volMother = roundUp01(transferVol * (df - 1.0));
+  }
   const double startTotalVol = volMother + transferVol;
   const double dmsoStart = roundUp01(
       vpe.volMother > 0.0 ? vpe.dmso * (startTotalVol / vpe.volMother) : 0.0);
-  const double dmsoDilute = roundUp01(transferVol > 0.0 ? vpe.volMother : 0.0);
+  const double dmsoDilute = roundUp01(transferVol > 0.0 ? volMother : 0.0);
 
-  const double stdVolMother = roundUp01(stdVpe.volMother);
-  const double stdTransferVol =
+  double stdVolMother = roundUp01(stdVpe.volMother);
+  double stdTransferVol =
       roundNearest01(stdDf > 1.0 ? stdVpe.volMother / (stdDf - 1.0) : 0.0);
+  if (stdDf > 1.0 && stdTransferVol < 1.0) {
+      stdTransferVol = 1.0;
+      stdVolMother = roundUp01(stdTransferVol * (stdDf - 1.0));
+  }
   const double stdStartTotalVol = stdVolMother + stdTransferVol;
   const double stdDmsoStart =
       roundUp01(stdVpe.volMother > 0.0
                     ? stdVpe.dmso * (stdStartTotalVol / stdVpe.volMother)
                     : 0.0);
   const double stdDmsoDilute =
-      roundUp01(stdTransferVol > 0.0 ? stdVpe.volMother : 0.0);
+      roundUp01(stdTransferVol > 0.0 ? stdVolMother : 0.0);
 
   // ---- Per-compound volume/dilution plans ----
   struct PerCmpPlan {
