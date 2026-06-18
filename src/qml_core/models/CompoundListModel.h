@@ -12,6 +12,8 @@ struct CompoundItem {
     Status status = Status::Pending;
     bool selected = false;
     bool hasSolution = false;
+    int numberOfDilutions = 3;
+    int numberOfReplicates = 3;
 };
 
 class CompoundListModel : public QAbstractListModel
@@ -24,7 +26,9 @@ public:
         StatusRole,
         StatusTextRole,
         SelectedRole,
-        SelectableRole
+        SelectableRole,
+        NumberOfDilutionsRole,
+        NumberOfReplicatesRole
     };
 
     explicit CompoundListModel(QObject *parent = nullptr);

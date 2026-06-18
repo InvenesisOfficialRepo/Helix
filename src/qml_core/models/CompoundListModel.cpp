@@ -25,6 +25,8 @@ QVariant CompoundListModel::data(const QModelIndex &index, int role) const
     case StatusTextRole:        return statusToText(it.status);
     case SelectedRole:          return it.selected;
     case SelectableRole:        return (it.status == Status::Pending && it.hasSolution);
+    case NumberOfDilutionsRole: return it.numberOfDilutions;
+    case NumberOfReplicatesRole:return it.numberOfReplicates;
     default:                    return {};
     }
 }
@@ -37,7 +39,9 @@ QHash<int, QByteArray> CompoundListModel::roleNames() const
         {StatusRole, "status"},
         {StatusTextRole, "statusText"},
         {SelectedRole, "selected"},
-        {SelectableRole, "selectable"}
+        {SelectableRole, "selectable"},
+        {NumberOfDilutionsRole, "numberOfDilutions"},
+        {NumberOfReplicatesRole, "numberOfReplicates"}
     };
 }
 

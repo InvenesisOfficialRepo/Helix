@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.1.3",
-  "release_notes": "<h3>Helix Launcher 1.1.3</h3><ul><li>Make catalogue standard name lookup case-insensitive.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.3/Helix_Setup.exe"
+  "latest_version": "1.1.4",
+  "release_notes": "<h3>Helix Launcher 1.1.4</h3><ul><li>Add dynamic test plate estimation in the project detail view.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.4/Helix_Setup.exe"
 }

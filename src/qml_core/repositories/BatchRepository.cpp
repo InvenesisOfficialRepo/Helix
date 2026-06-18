@@ -85,7 +85,9 @@ BatchDetailDto BatchRepository::loadBatchDetail(const QString& batchId, QString*
                 SELECT 1 
                 FROM public.solutions s 
                 WHERE LOWER(s.product_name) = LOWER(c.compound_name)
-              ) AS has_solution
+              ) AS has_solution,
+              c.number_of_dilutions,
+              c.number_of_replicate
             FROM public.tracked_test_compounds c
             WHERE c.batch_id = :batch
             ORDER BY c.created_at ASC
@@ -106,6 +108,10 @@ BatchDetailDto BatchRepository::loadBatchDetail(const QString& batchId, QString*
             c.scheduledFor      = q.value(3).toDate();
             c.robotRequestId    = q.value(4).toString();
             c.hasSolution       = q.value(5).toBool();
+            c.numberOfDilutions = q.value(6).toInt();
+            if (c.numberOfDilutions <= 0) c.numberOfDilutions = 3;
+            c.numberOfReplicates = q.value(7).toInt();
+            if (c.numberOfReplicates <= 0) c.numberOfReplicates = 3;
             compounds.push_back(std::move(c));
         }
         out.compounds = std::move(compounds);

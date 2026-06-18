@@ -23,6 +23,7 @@ class ProjectViewModel : public QObject
     Q_PROPERTY(QVariantMap analysisResults READ analysisResults NOTIFY analysisResultsChanged)
     Q_PROPERTY(bool hasResults READ hasResults NOTIFY hasResultsChanged)
     Q_PROPERTY(bool hasReport READ hasReport NOTIFY batchChanged)
+    Q_PROPERTY(int estimatedTestPlates READ estimatedTestPlates NOTIFY estimatedTestPlatesChanged)
 
 public:
     explicit ProjectViewModel(QObject *parent = nullptr);
@@ -43,6 +44,7 @@ public:
     QVariantMap analysisResults() const;
     bool hasResults() const;
     bool hasReport() const;
+    int estimatedTestPlates() const;
 
     Q_INVOKABLE void loadBatch(const QString& batchId);
     Q_INVOKABLE void selectAllPending();
@@ -61,6 +63,7 @@ signals:
     void publishFinished(bool success, const QString& errorMsg);
     void analysisResultsChanged();
     void hasResultsChanged();
+    void estimatedTestPlatesChanged();
 
     // UI -> worker
     void requestBatchDetail(const QString& batchId);
@@ -78,6 +81,7 @@ private slots:
     void onSendDone();
     void onSendFailed(const QString& error);
     void onPublishFinished(bool success, const QString& error);
+    void calculateEstimatedTestPlates();
 
 private:
     void setBusy(bool v);
@@ -98,5 +102,6 @@ private:
     QVariantMap analysisResults_;
     bool hasResults_ = false;
     bool hasReport_ = false;
+    int estimatedTestPlates_ = 0;
 };
 

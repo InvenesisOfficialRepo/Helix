@@ -63,6 +63,8 @@ set(APP_SOURCES
     src/qml_core/services/AnalysisModules.cpp
     src/qml_core/services/FeedingAnalysisProcessor.h
     src/qml_core/services/FeedingAnalysisProcessor.cpp
+    src/qml_core/services/PlateCalculator.h
+    src/qml_core/services/PlateCalculator.cpp
     src/qml_core/domain/Status.h
     src/qml_core/domain/Status.cpp
     src/qml_core/models/ProjectModel.h

@@ -12,6 +12,7 @@ RowLayout {
     property bool canSend: false
     property string role: ""
     property int compoundsCount: 0
+    property int estimatedPlates: 0
 
     signal selectAllPendingClicked()
     signal sendSelectedClicked()
@@ -38,10 +39,23 @@ RowLayout {
 
     Item { Layout.fillWidth: true }
 
-    Label {
-        text: "Compounds: " + root.compoundsCount
-        color: Style.subText
-        font.family: Style.fontSecondary
-        font.pixelSize: Style.fontSm
+    ColumnLayout {
+        spacing: 2
+        
+        Label {
+            text: "Estimated Plates: " + root.estimatedPlates
+            color: root.estimatedPlates > 0 ? Style.accent : Style.subText
+            font.family: Style.fontSecondary
+            font.pixelSize: Style.fontSm
+            visible: root.estimatedPlates > 0
+            font.bold: true
+        }
+
+        Label {
+            text: "Compounds: " + root.compoundsCount
+            color: Style.subText
+            font.family: Style.fontSecondary
+            font.pixelSize: Style.fontSm
+        }
     }
 }

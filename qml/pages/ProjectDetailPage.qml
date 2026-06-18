@@ -45,6 +45,7 @@ Page {
             canSend: App.session.canSend
             role: App.session.role
             compoundsCount: compounds.count
+            estimatedPlates: App.project.estimatedTestPlates
 
             onSelectAllPendingClicked: App.project.selectAllPending()
 

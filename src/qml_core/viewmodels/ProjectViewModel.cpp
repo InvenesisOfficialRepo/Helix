@@ -12,11 +12,14 @@
 #include <QFile>
 #include <QTextStream>
 #include <QJsonDocument>
+#include "services/PlateCalculator.h"
 
 ProjectViewModel::ProjectViewModel(QObject *parent)
     : QObject(parent)
 {
     compounds_ = new CompoundListModel(this);
+    connect(compounds_, &CompoundListModel::dataChanged, this, &ProjectViewModel::calculateEstimatedTestPlates);
+    connect(compounds_, &CompoundListModel::modelReset, this, &ProjectViewModel::calculateEstimatedTestPlates);
 }
 
 void ProjectViewModel::setDbWorker(DbWorker* worker)
@@ -77,6 +80,7 @@ QString ProjectViewModel::createdBy() const { return createdBy_; }
 CompoundListModel* ProjectViewModel::compoundsModel() const { return compounds_; }
 QString ProjectViewModel::errorMessage() const { return errorMessage_; }
 bool ProjectViewModel::busy() const { return busy_; }
+int ProjectViewModel::estimatedTestPlates() const { return estimatedTestPlates_; }
 
 void ProjectViewModel::setBusy(bool v)
 {
@@ -146,6 +150,8 @@ void ProjectViewModel::onBatchDetailReady(const BatchDetailDto& dto)
         it.status = c.status;
         it.selected = false;
         it.hasSolution = c.hasSolution;
+        it.numberOfDilutions = c.numberOfDilutions;
+        it.numberOfReplicates = c.numberOfReplicates;
         items.push_back(std::move(it));
     }
     compounds_->setItems(std::move(items));
@@ -173,6 +179,7 @@ void ProjectViewModel::onBatchDetailFailed(const QString& error)
 void ProjectViewModel::selectAllPending()
 {
     compounds_->selectAllPending();
+    calculateEstimatedTestPlates();
 }
 
 void ProjectViewModel::sendSelected(const QDate &date)
@@ -407,4 +414,26 @@ bool ProjectViewModel::exportAnalysis(const QUrl& folderUrl)
     return true;
 }
 
+void ProjectViewModel::calculateEstimatedTestPlates()
+{
+    if (!compounds_) return;
 
+    QList<PlateCalculator::CompoundInfo> selectedCompounds;
+    for (int i = 0; i < compounds_->rowCount(); ++i) {
+        QModelIndex idx = compounds_->index(i, 0);
+        if (compounds_->data(idx, CompoundListModel::SelectedRole).toBool()) {
+            PlateCalculator::CompoundInfo info;
+            info.name = compounds_->data(idx, CompoundListModel::CompoundNameRole).toString();
+            info.numberOfDilutions = compounds_->data(idx, CompoundListModel::NumberOfDilutionsRole).toInt();
+            info.numberOfReplicates = compounds_->data(idx, CompoundListModel::NumberOfReplicatesRole).toInt();
+            if (info.numberOfReplicates <= 0) info.numberOfReplicates = 3;
+            selectedCompounds.append(info);
+        }
+    }
+
+    int plates = PlateCalculator::estimateTestPlatesCount(testCode_, selectedCompounds);
+    if (plates != estimatedTestPlates_) {
+        estimatedTestPlates_ = plates;
+        emit estimatedTestPlatesChanged();
+    }
+}

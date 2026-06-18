@@ -16,6 +16,8 @@ struct CompoundDto {
     QDate scheduledFor;            // can be invalid
     QString robotRequestId;        // can be empty
     bool hasSolution = false;
+    int numberOfDilutions = 3;
+    int numberOfReplicates = 3;
 };
 
 struct BatchDetailDto {
