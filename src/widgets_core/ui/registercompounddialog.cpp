@@ -336,7 +336,7 @@ bool RegisterCompoundDialog::saveAsSolution(QString* errOut)
     query.bindValue(":concentration_unit", solConcUnitComboBox->currentText());
     query.bindValue(":solvent", solSolventComboBox->currentText());
     query.bindValue(":molecular_weight", mw_val > 0.0 ? QVariant(mw_val) : QVariant(QVariant::Double));
-    query.bindValue(":quantity", QVariant(QVariant::Double)); // solutions don't have dry weight
+    query.bindValue(":quantity", solVolumeSpinBox->value());
     query.bindValue(":quantity_unit", "uL");
     query.bindValue(":purity", purity_val > 0.0 ? QVariant(purity_val) : QVariant(QVariant::Double));
     query.bindValue(":solvent_volume", solVolumeSpinBox->value());

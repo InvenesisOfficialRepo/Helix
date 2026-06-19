@@ -255,7 +255,7 @@ bool DissolveBottleDialog::saveAsSolution(QString* errOut)
     query.bindValue(":concentration_unit", solConcUnitComboBox->currentText());
     query.bindValue(":solvent", solSolventComboBox->currentText());
     query.bindValue(":molecular_weight", mwSpinBox->value() > 0.0 ? QVariant(mwSpinBox->value()) : QVariant(QVariant::Double));
-    query.bindValue(":quantity", QVariant(QVariant::Double)); // solutions do not have dry weight
+    query.bindValue(":quantity", m_calculatedVolume);
     query.bindValue(":quantity_unit", "uL");
     query.bindValue(":purity", puritySpinBox->value() > 0.0 ? QVariant(puritySpinBox->value()) : QVariant(QVariant::Double));
     query.bindValue(":solvent_volume", m_calculatedVolume);
