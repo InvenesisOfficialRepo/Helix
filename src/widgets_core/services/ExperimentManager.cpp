@@ -321,8 +321,8 @@ QStandardItemModel* ExperimentManager::createTestRequestModel(const QList<QVaria
     auto *model = new QStandardItemModel(parent);
     const QStringList headers = {"request_id", "project_code", "requested_tests", "compound_name", 
                                  "starting_concentration", "starting_concentration_unit", "dilution_steps", 
-                                 "dilution_steps_unit", "number_of_dilutions", "number_of_replicate", 
-                                 "stock_concentration", "stock_concentration_unit", "concentration_to_be_tested", 
+                                 "number_of_dilutions", "number_of_replicate", 
+                                 "stock_concentration", "stock_concentration_unit", 
                                  "additional_notes"};
     model->setHorizontalHeaderLabels(headers);
     for (const QVariantMap &obj : data) {
@@ -356,8 +356,8 @@ QStandardItemModel* ExperimentManager::createTestRequestModelFromJson(const QJso
     auto *model = new QStandardItemModel(parent);
     const QStringList headers = {"request_id", "project_code", "requested_tests", "compound_name", 
                                  "starting_concentration", "starting_concentration_unit", "dilution_steps", 
-                                 "dilution_steps_unit", "number_of_dilutions", "number_of_replicate", 
-                                 "stock_concentration", "stock_concentration_unit", "concentration_to_be_tested", 
+                                 "number_of_dilutions", "number_of_replicate", 
+                                 "stock_concentration", "stock_concentration_unit", 
                                  "additional_notes"};
     model->setHorizontalHeaderLabels(headers);
     for (const QJsonValue &val : array) {

@@ -354,9 +354,8 @@ QStandardItemModel* parseTestRequests(const QJsonArray &array, QObject* parent) 
     const QStringList headers = {"request_id", "project_code", "requested_tests",
                                  "compound_name", "starting_concentration",
                                  "starting_concentration_unit", "dilution_steps",
-                                 "dilution_steps_unit", "number_of_dilutions",
-                                 "number_of_replicate", "stock_concentration",
-                                 "stock_concentration_unit", "concentration_to_be_tested",
+                                 "number_of_dilutions", "number_of_replicate", 
+                                 "stock_concentration", "stock_concentration_unit", 
                                  "additional_notes"};
     model->setHorizontalHeaderLabels(headers);
 
