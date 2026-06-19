@@ -376,7 +376,7 @@ QStandardItemModel* parseCompounds(const QJsonArray &array, QObject* parent) {
 
     auto *model = new QStandardItemModel(parent);
     const QStringList headers = {
-        "product_name",  "invenesis_solution_id", "weight",       "weight_unit",
+        "product_name",  "invenesis_solution_id", "quantity",       "quantity_unit",
         "concentration", "concentration_unit",    "container_id", "well_id",
         "matrix_tube_id"};
     model->setHorizontalHeaderLabels(headers);

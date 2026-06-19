@@ -38,8 +38,8 @@ private:
     // GUI widgets
     QLineEdit* compoundNameEdit;
     QLineEdit* bottleBarcodeEdit;
-    QDoubleSpinBox* weightSpinBox;
-    QLineEdit* weightUnitEdit;
+    QDoubleSpinBox* quantitySpinBox;
+    QLineEdit* quantityUnitEdit;
     QDoubleSpinBox* mwSpinBox;
     QDoubleSpinBox* puritySpinBox;
 

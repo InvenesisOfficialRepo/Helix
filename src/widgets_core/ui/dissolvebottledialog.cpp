@@ -77,18 +77,18 @@ void DissolveBottleDialog::setupUI()
     puritySpinBox->setValue(m_purity);
     bottleLayout->addRow(tr("Purity (%):"), puritySpinBox);
 
-    // Weight input
+    // Quantity input
     auto* wtLayout = new QHBoxLayout();
-    weightSpinBox = new QDoubleSpinBox(this);
-    weightSpinBox->setRange(0.0, 1000000.0);
-    weightSpinBox->setDecimals(3);
-    weightSpinBox->setValue(m_receivedAmount);
-    weightUnitEdit = new QLineEdit(m_amountUnit, this);
-    weightUnitEdit->setReadOnly(true);
-    weightUnitEdit->setMaximumWidth(60);
-    weightUnitEdit->setStyleSheet("background-color: #f0f0f0;");
-    wtLayout->addWidget(weightSpinBox);
-    wtLayout->addWidget(weightUnitEdit);
+    quantitySpinBox = new QDoubleSpinBox(this);
+    quantitySpinBox->setRange(0.0, 1000000.0);
+    quantitySpinBox->setDecimals(3);
+    quantitySpinBox->setValue(m_receivedAmount);
+    quantityUnitEdit = new QLineEdit(m_amountUnit, this);
+    quantityUnitEdit->setReadOnly(true);
+    quantityUnitEdit->setMaximumWidth(60);
+    quantityUnitEdit->setStyleSheet("background-color: #f0f0f0;");
+    wtLayout->addWidget(quantitySpinBox);
+    wtLayout->addWidget(quantityUnitEdit);
     bottleLayout->addRow(tr("Dry Quantity:"), wtLayout);
 
     mainLayout->addWidget(bottleGroup);
@@ -144,7 +144,7 @@ void DissolveBottleDialog::setupUI()
     // Connections
     connect(mwSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &DissolveBottleDialog::onInputsChanged);
     connect(puritySpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &DissolveBottleDialog::onInputsChanged);
-    connect(weightSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &DissolveBottleDialog::onInputsChanged);
+    connect(quantitySpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &DissolveBottleDialog::onInputsChanged);
     connect(solSolventComboBox, &QComboBox::currentTextChanged, this, &DissolveBottleDialog::onInputsChanged);
     connect(solConcSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &DissolveBottleDialog::onInputsChanged);
     connect(solConcUnitComboBox, &QComboBox::currentTextChanged, this, &DissolveBottleDialog::onInputsChanged);
@@ -155,8 +155,8 @@ void DissolveBottleDialog::setupUI()
 
 void DissolveBottleDialog::onInputsChanged()
 {
-    double mg = weightSpinBox->value();
-    QString unit = weightUnitEdit->text().trimmed().toLower();
+    double mg = quantitySpinBox->value();
+    QString unit = quantityUnitEdit->text().trimmed().toLower();
     if (unit == "g") {
         mg *= 1000.0;
     }
@@ -240,11 +240,11 @@ bool DissolveBottleDialog::saveAsSolution(QString* errOut)
     query.prepare(
         "INSERT INTO public.solutions ("
         "    invenesis_solution_id, product_name, concentration, concentration_unit, solvent, "
-        "    molecular_weight, weight, weight_unit, purity, solvent_volume, "
+        "    molecular_weight, quantity, quantity_unit, purity, solvent_volume, "
         "    container_id, well_id, matrix_tube_id, project_code, preparation_date"
         ") VALUES ("
         "    :invenesis_solution_id, :product_name, :concentration, :concentration_unit, :solvent, "
-        "    :molecular_weight, :weight, :weight_unit, :purity, :solvent_volume, "
+        "    :molecular_weight, :quantity, :quantity_unit, :purity, :solvent_volume, "
         "    :container_id, :well_id, :matrix_tube_id, :project_code, CURRENT_DATE"
         ")"
     );
@@ -255,8 +255,8 @@ bool DissolveBottleDialog::saveAsSolution(QString* errOut)
     query.bindValue(":concentration_unit", solConcUnitComboBox->currentText());
     query.bindValue(":solvent", solSolventComboBox->currentText());
     query.bindValue(":molecular_weight", mwSpinBox->value() > 0.0 ? QVariant(mwSpinBox->value()) : QVariant(QVariant::Double));
-    query.bindValue(":weight", QVariant(QVariant::Double)); // solutions do not have dry weight
-    query.bindValue(":weight_unit", "uL");
+    query.bindValue(":quantity", QVariant(QVariant::Double)); // solutions do not have dry weight
+    query.bindValue(":quantity_unit", "uL");
     query.bindValue(":purity", puritySpinBox->value() > 0.0 ? QVariant(puritySpinBox->value()) : QVariant(QVariant::Double));
     query.bindValue(":solvent_volume", m_calculatedVolume);
     query.bindValue(":container_id", solPlateBarcodeEdit->text().trimmed().toUpper());

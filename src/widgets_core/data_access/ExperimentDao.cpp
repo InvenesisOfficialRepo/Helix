@@ -36,7 +36,7 @@ QList<QVariantMap> ExperimentDao::fetchSolutionsForCompound(const QString& compo
     QList<QVariantMap> results;
     QSqlQuery query;
     query.prepare(R"(
-            SELECT solution_id, product_name, invenesis_solution_id, weight, weight_unit,
+            SELECT solution_id, product_name, invenesis_solution_id, quantity, quantity_unit,
                    concentration, concentration_unit, container_id, well_id, matrix_tube_id
             FROM   solutions
             WHERE  LOWER(product_name) = LOWER(:compound))");
@@ -68,7 +68,7 @@ QList<QVariantMap> ExperimentDao::fetchSolutionsByIds(const QList<int>& solution
     }
 
     const QString queryStr = QStringLiteral(R"(
-        SELECT product_name, invenesis_solution_id, weight, weight_unit,
+        SELECT product_name, invenesis_solution_id, quantity, quantity_unit,
                concentration, concentration_unit, container_id, well_id,
                matrix_tube_id
         FROM   solutions

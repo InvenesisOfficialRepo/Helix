@@ -69,8 +69,8 @@ private:
     QLineEdit* pwdCompoundNameEdit;
     QLineEdit* pwdInvenesisIdEdit;
     QLineEdit* pwdBarcodeEdit;
-    QDoubleSpinBox* pwdWeightSpinBox;
-    QComboBox* pwdWeightUnitComboBox;
+    QDoubleSpinBox* pwdQuantitySpinBox;
+    QComboBox* pwdQuantityUnitComboBox;
     QDoubleSpinBox* pwdMwSpinBox;
     QDoubleSpinBox* pwdPuritySpinBox;
     QComboBox* pwdStorageComboBox;

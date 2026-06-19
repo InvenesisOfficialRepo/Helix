@@ -338,7 +338,7 @@ QStandardItemModel* ExperimentManager::createTestRequestModel(const QList<QVaria
 QStandardItemModel* ExperimentManager::createCompoundModel(const QList<QVariantMap>& data, QObject* parent) const {
     auto *model = new QStandardItemModel(parent);
     const QStringList headers = {
-        "product_name",  "invenesis_solution_id", "weight",       "weight_unit",
+        "product_name",  "invenesis_solution_id", "quantity",       "quantity_unit",
         "concentration", "concentration_unit",    "container_id", "well_id",
         "matrix_tube_id"};
     model->setHorizontalHeaderLabels(headers);
@@ -374,7 +374,7 @@ QStandardItemModel* ExperimentManager::createTestRequestModelFromJson(const QJso
 QStandardItemModel* ExperimentManager::createCompoundModelFromJson(const QJsonArray& array, QObject* parent) const {
     auto *model = new QStandardItemModel(parent);
     const QStringList headers = {
-        "product_name",  "invenesis_solution_id", "weight",       "weight_unit",
+        "product_name",  "invenesis_solution_id", "quantity",       "quantity_unit",
         "concentration", "concentration_unit",    "container_id", "well_id",
         "matrix_tube_id"};
     model->setHorizontalHeaderLabels(headers);

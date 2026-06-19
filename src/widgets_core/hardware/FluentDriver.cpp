@@ -430,8 +430,8 @@ bool FluentDriver::generate(const QJsonObject &exp,
       r.containerBarcode = o.value("container_id").toString();
       r.sampleAlias = o.value("product_name").toString();
       r.wellA01 = toA01(o.value("well_id").toString());
-      r.volumeUL = roundUp01(readDouble(o, "weight", 0.0));
-      r.volumeUnit = o.value("weight_unit").toString("uL");
+      r.volumeUL = roundUp01(readDouble(o, "quantity", 0.0));
+      r.volumeUnit = o.value("quantity_unit").toString("uL");
       r.conc = readDouble(o, "concentration", 0.0);
       r.concUnit = o.value("concentration_unit").toString("uM");
       r.u1 = QString("%1_%2").arg(r.containerBarcode, r.wellA01);

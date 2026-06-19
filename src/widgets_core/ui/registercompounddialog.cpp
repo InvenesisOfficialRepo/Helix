@@ -186,18 +186,18 @@ void RegisterCompoundDialog::setupUI()
     pwdBarcodeEdit->setPlaceholderText(tr("Scan or enter physical vial barcode"));
     pwdLayout->addRow(tr("Physical Barcode:"), pwdBarcodeEdit);
 
-    // Weight input
+    // Quantity input
     auto* wtLayout = new QHBoxLayout();
-    pwdWeightSpinBox = new QDoubleSpinBox(powderTabWidget);
-    pwdWeightSpinBox->setRange(0.0, 1000000.0);
-    pwdWeightSpinBox->setDecimals(2);
-    pwdWeightSpinBox->setValue(!m_isSolutionFromNotes ? m_quantity : 5.0);
-    pwdWeightUnitComboBox = new QComboBox(powderTabWidget);
-    pwdWeightUnitComboBox->addItems(QStringList() << "mg" << "g");
-    pwdWeightUnitComboBox->setCurrentText(!m_isSolutionFromNotes ? m_quantityUnit : "mg");
-    wtLayout->addWidget(pwdWeightSpinBox);
-    wtLayout->addWidget(pwdWeightUnitComboBox);
-    pwdLayout->addRow(tr("Received Weight:"), wtLayout);
+    pwdQuantitySpinBox = new QDoubleSpinBox(powderTabWidget);
+    pwdQuantitySpinBox->setRange(0.0, 1000000.0);
+    pwdQuantitySpinBox->setDecimals(2);
+    pwdQuantitySpinBox->setValue(!m_isSolutionFromNotes ? m_quantity : 5.0);
+    pwdQuantityUnitComboBox = new QComboBox(powderTabWidget);
+    pwdQuantityUnitComboBox->addItems(QStringList() << "mg" << "g");
+    pwdQuantityUnitComboBox->setCurrentText(!m_isSolutionFromNotes ? m_quantityUnit : "mg");
+    wtLayout->addWidget(pwdQuantitySpinBox);
+    wtLayout->addWidget(pwdQuantityUnitComboBox);
+    pwdLayout->addRow(tr("Received Quantity:"), wtLayout);
 
     pwdMwSpinBox = new QDoubleSpinBox(powderTabWidget);
     pwdMwSpinBox->setRange(0.0, 10000.0);
@@ -311,11 +311,11 @@ bool RegisterCompoundDialog::saveAsSolution(QString* errOut)
     query.prepare(
         "INSERT INTO public.solutions ("
         "    invenesis_solution_id, product_name, concentration, concentration_unit, solvent, "
-        "    molecular_weight, weight, weight_unit, purity, solvent_volume, "
+        "    molecular_weight, quantity, quantity_unit, purity, solvent_volume, "
         "    container_id, well_id, matrix_tube_id, project_code, preparation_date"
         ") VALUES ("
         "    :invenesis_solution_id, :product_name, :concentration, :concentration_unit, :solvent, "
-        "    :molecular_weight, :weight, :weight_unit, :purity, :solvent_volume, "
+        "    :molecular_weight, :quantity, :quantity_unit, :purity, :solvent_volume, "
         "    :container_id, :well_id, :matrix_tube_id, :project_code, CURRENT_DATE"
         ")"
     );
@@ -336,8 +336,8 @@ bool RegisterCompoundDialog::saveAsSolution(QString* errOut)
     query.bindValue(":concentration_unit", solConcUnitComboBox->currentText());
     query.bindValue(":solvent", solSolventComboBox->currentText());
     query.bindValue(":molecular_weight", mw_val > 0.0 ? QVariant(mw_val) : QVariant(QVariant::Double));
-    query.bindValue(":weight", QVariant(QVariant::Double)); // solutions don't have dry weight
-    query.bindValue(":weight_unit", "uL");
+    query.bindValue(":quantity", QVariant(QVariant::Double)); // solutions don't have dry weight
+    query.bindValue(":quantity_unit", "uL");
     query.bindValue(":purity", purity_val > 0.0 ? QVariant(purity_val) : QVariant(QVariant::Double));
     query.bindValue(":solvent_volume", solVolumeSpinBox->value());
     query.bindValue(":container_id", solPlateBarcodeEdit->text().trimmed().toUpper());
@@ -368,8 +368,8 @@ bool RegisterCompoundDialog::saveAsPowder(QString* errOut)
     query.bindValue(":invenesis_bottle_id", pwdInvenesisIdEdit->text().trimmed());
     query.bindValue(":product_name", m_compoundName);
     query.bindValue(":molecular_weight", pwdMwSpinBox->value() > 0.0 ? QVariant(pwdMwSpinBox->value()) : QVariant(QVariant::Double));
-    query.bindValue(":received_amount", pwdWeightSpinBox->value());
-    query.bindValue(":amount_unit", pwdWeightUnitComboBox->currentText());
+    query.bindValue(":received_amount", pwdQuantitySpinBox->value());
+    query.bindValue(":amount_unit", pwdQuantityUnitComboBox->currentText());
     query.bindValue(":purity", pwdPuritySpinBox->value() > 0.0 ? QVariant(pwdPuritySpinBox->value()) : QVariant(QVariant::Double));
     query.bindValue(":storage", pwdStorageComboBox->currentText());
     query.bindValue(":location_lab", pwdLocationLabEdit->text().trimmed().isEmpty() ? QVariant(QVariant::String) : pwdLocationLabEdit->text().trimmed());
