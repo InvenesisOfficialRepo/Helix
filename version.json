@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.1.5",
-  "release_notes": "<h3>Helix Launcher 1.1.5</h3><ul><li>Refactored database terminology (weight to quantity).</li><li>Fixed solution volume assignment bug.</li><li>Database test request table cleanup.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.5/Helix_Setup.exe"
+  "latest_version": "1.1.6",
+  "release_notes": "<h3>Helix Launcher 1.1.6</h3><ul><li>Fixed Timepoint Selection sync bug for standalone & DB mode.</li><li>Extracted and enhanced 384-well dynamic heatmap for Plate Rendering.</li><li>Enhanced CSV parsing logic to handle complex headers.</li><li>Fixed Tecan GWL Export Test_1.csv 384-well test layout padding.</li><li>Added External JSON Loading support to the Tecan Window.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.6/Helix_Setup.exe"
 }

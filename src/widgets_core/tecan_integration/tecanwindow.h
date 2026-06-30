@@ -46,6 +46,7 @@ private slots:
     void on_clearPlatesButton_clicked();
     void on_actionSave_triggered();
     void on_actionLoad_triggered();
+    void on_actionLoad_External_triggered();
     void on_actionGenerate_GWL_triggered();
     void on_actionCreate_Plate_Map_triggered();
 

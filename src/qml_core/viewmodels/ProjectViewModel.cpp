@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include "services/PlateCalculator.h"
 
 ProjectViewModel::ProjectViewModel(QObject *parent)
@@ -82,6 +83,26 @@ QString ProjectViewModel::errorMessage() const { return errorMessage_; }
 bool ProjectViewModel::busy() const { return busy_; }
 int ProjectViewModel::estimatedTestPlates() const { return estimatedTestPlates_; }
 
+void ProjectViewModel::setTestCode(const QString& code)
+{
+    if (testCode_ == code) return;
+    testCode_ = code;
+    emit batchChanged();
+}
+
+QStringList ProjectViewModel::availableTestCodes() const
+{
+    QStringList codes;
+    QFile vocabFile(":/data/resources/data/tests_vocabulary.json");
+    if (vocabFile.open(QIODevice::ReadOnly)) {
+        QJsonObject vocab = QJsonDocument::fromJson(vocabFile.readAll()).object();
+        codes = vocab.keys();
+        vocabFile.close();
+    }
+    codes.sort();
+    return codes;
+}
+
 void ProjectViewModel::setBusy(bool v)
 {
     if (busy_ == v) return;
@@ -118,8 +139,14 @@ void ProjectViewModel::loadBatch(const QString& batchId)
     }
 
     setError(QString{});
-    setBusy(true);
     compounds_->setItems({}); // clear old
+
+    if (batchId_.isEmpty()) {
+        // Standalone mode: no batch to load from DB
+        return;
+    }
+
+    setBusy(true);
     emit requestBatchDetail(batchId_);
 }
 
@@ -266,7 +293,7 @@ void ProjectViewModel::runAnalysis(const QVariantList& layoutCsvs, const QVarian
     setBusy(true);
 
     AnalysisPipeline pipeline;
-    QVariantMap res = pipeline.runAnalysis(layoutCsvs, rawDataCsvs, expJson, timepoint, batchId_, feedingDataCsvs);
+    QVariantMap res = pipeline.runAnalysis(layoutCsvs, rawDataCsvs, expJson, timepoint, batchId_, feedingDataCsvs, testCode_);
 
     setBusy(false);
     if (res.value("success").toBool()) {

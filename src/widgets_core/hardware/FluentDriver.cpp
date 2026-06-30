@@ -1277,7 +1277,22 @@ bool FluentDriver::generate(const QJsonObject &exp,
     QString dilStepsStr = QString::number(
         readDouble(exp.value("test_requests").toArray().at(0).toObject(),
                    "dilution_steps", 0.0));
-    QList<DaughterPlateEntry> allRows = fillMissingWells(rows, testBarcode, is384, projectCode, dilStepsStr);
+                   
+    bool isTest384 = false;
+    QString testId;
+    QJsonArray trArr = exp.value("test_requests").toArray();
+    if (!trArr.isEmpty()) {
+        testId = trArr.at(0).toObject().value("requested_tests").toString();
+    }
+    QFile vocabFile(":/data/resources/data/tests_vocabulary.json");
+    if (vocabFile.open(QIODevice::ReadOnly)) {
+        QJsonObject vocab = QJsonDocument::fromJson(vocabFile.readAll()).object();
+        if (vocab.value(testId).toString() == "384") {
+            isTest384 = true;
+        }
+    }
+
+    QList<DaughterPlateEntry> allRows = fillMissingWells(rows, testBarcode, isTest384, projectCode, dilStepsStr);
 
     FileOut fcsv;
     fcsv.relativePath = QString("PlateMapHitLW/%1.csv").arg(testBarcode);

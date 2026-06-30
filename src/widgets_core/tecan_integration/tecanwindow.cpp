@@ -709,6 +709,42 @@ void TecanWindow::on_actionLoad_triggered() {
   showInfo(this, tr("Experiment Loaded"), tr("Experiment '%1' loaded successfully.").arg(expCode));
 }
 
+void TecanWindow::on_actionLoad_External_triggered() {
+  QString filePath = QFileDialog::getOpenFileName(this, tr("Load External experiment.json"), QString(), tr("JSON Files (*.json)"));
+  if (filePath.isEmpty()) return;
+
+  QFile file(filePath);
+  if (!file.open(QIODevice::ReadOnly)) {
+      showError(this, tr("Error"), tr("Could not open file."));
+      return;
+  }
+
+  QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+  if (!doc.isObject()) {
+      showError(this, tr("Error"), tr("Invalid JSON format."));
+      return;
+  }
+
+  QJsonObject loadedJson = doc.object();
+  m_viewModel->setLastSavedExperimentJson(loadedJson);
+
+  /* ---- restore UI state ---- */
+  loadTestRequestsFromJson(m_viewModel->getLastSavedExperimentJson()["test_requests"].toArray());
+  loadCompoundsFromJson(m_viewModel->getLastSavedExperimentJson()["compounds"].toArray());
+  loadMatrixPlatesFromJson(m_viewModel->getLastSavedExperimentJson()["matrix_plates"].toObject());
+
+  QString qcType = m_viewModel->getLastSavedExperimentJson().value("qc_plate_type").toString();
+  if (!qcType.isEmpty()) {
+    qcSelectionCombo->blockSignals(true);
+    qcSelectionCombo->setCurrentText(qcType);
+    qcSelectionCombo->blockSignals(false);
+  }
+
+  loadDaughterPlatesFromJson(m_viewModel->getLastSavedExperimentJson()["daughter_plates"].toArray(), true);
+
+  showInfo(this, tr("Experiment Loaded"), tr("External experiment loaded successfully."));
+}
+
 /* =========================================================================
  *  JSON → model helpers
  * ========================================================================= */

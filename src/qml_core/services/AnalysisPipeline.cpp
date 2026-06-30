@@ -215,7 +215,8 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
                                           const QUrl& expJsonUrl,
                                           const QString& timepoint,
                                           const QString& batchId,
-                                          const QVariantList& feedingDataCsvs)
+                                          const QVariantList& feedingDataCsvs,
+                                          const QString& overrideTestId)
 {
     (void)batchId;
     QVariantMap result;
@@ -320,6 +321,21 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
                 expObj = doc.object();
             }
             jsonFile.close();
+        }
+    }
+
+    // Determine test ID and Plate Format before parsing layout
+    QString testId = overrideTestId;
+    if (testId.isEmpty() && expObj.contains("test_id")) {
+        testId = expObj.value("test_id").toString();
+    }
+    
+    int plateFormat = 96;
+    QFile vocabFile(":/data/resources/data/tests_vocabulary.json");
+    if (vocabFile.open(QIODevice::ReadOnly)) {
+        QJsonObject vocab = QJsonDocument::fromJson(vocabFile.readAll()).object();
+        if (vocab.value(testId).toString() == "384") {
+            plateFormat = 384;
         }
     }
 
@@ -449,6 +465,8 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
         CsvTable rawTable = parseCsv(matchedRawFile);
         int rWellIdx = findColumnIndex(rawTable.headers, {"well"});
         int rArenaIdx = findColumnIndex(rawTable.headers, {"arena"});
+        int rRowIdx = findColumnIndex(rawTable.headers, {"row"});
+        int rColIdx = findColumnIndex(rawTable.headers, {"col", "column"});
         int rMeanIdx = findColumnIndex(rawTable.headers, {"mean", "signal", "raw", "value", "rfu"});
 
         QMap<QString, double> rawValuesMap;
@@ -467,6 +485,25 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
                         rawWell = arenaToWell(arena);
                     }
                 }
+            } else if (rRowIdx >= 0 && rColIdx >= 0 && rRowIdx < row.size() && rColIdx < row.size()) {
+                QString rVal = row[rRowIdx].trimmed();
+                QString cVal = row[rColIdx].trimmed();
+                if (!rVal.isEmpty() && !cVal.isEmpty()) {
+                    bool isNum = false;
+                    int rNum = rVal.toInt(&isNum);
+                    QString rowLet;
+                    if (isNum && rNum > 0 && rNum <= 26) {
+                        rowLet = QChar('A' + rNum - 1);
+                    } else {
+                        rowLet = rVal.toUpper();
+                    }
+                    
+                    bool isColNum = false;
+                    int cNum = cVal.toInt(&isColNum);
+                    if (isColNum && cNum > 0) {
+                        rawWell = QString("%1%2").arg(rowLet).arg(cNum, 2, 10, QChar('0'));
+                    }
+                }
             }
             if (rawWell.isEmpty()) continue;
 
@@ -475,22 +512,55 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
         }
 
         // Assign raw signals to plate wells
-        for (int i = 0; i < plateData.wells.size(); ++i) {
-            QString w = plateData.wells[i].well;
-            if (rawValuesMap.contains(w)) {
-                plateData.wells[i].rawSignal = rawValuesMap[w];
+        for (auto& well : plateData.wells) {
+            if (rawValuesMap.contains(well.well)) {
+                well.rawSignal = rawValuesMap[well.well];
             } else {
-                // If well not found, default to mock placebo signal
-                plateData.wells[i].rawSignal = 12000.0;
+                well.rawSignal = -1.0; // Indicate missing data
             }
-
-            // Populate feeding density if available
-            QString upperBarcode = plateData.barcode.toUpper();
-            if (plateFeedingValues.contains(upperBarcode) && plateFeedingValues[upperBarcode].contains(w)) {
-                plateData.wells[i].hasFeeding = true;
-                plateData.wells[i].feedingDensity = plateFeedingValues[upperBarcode][w];
+            if (plateFeedingValues.contains(plateData.barcode) && plateFeedingValues[plateData.barcode].contains(well.well)) {
+                well.feedingDensity = plateFeedingValues[plateData.barcode][well.well];
+                well.hasFeeding = true;
             }
         }
+
+        // --- ADD MISSING WELLS ---
+        int maxR = (plateFormat == 384) ? 16 : 8;
+        int maxC = (plateFormat == 384) ? 24 : 12;
+
+        for (int r = 0; r < maxR; ++r) {
+            char rowChar = 'A' + r;
+            for (int c = 1; c <= maxC; ++c) {
+                QString w = QString("%1%2").arg(rowChar).arg(c, 2, 10, QChar('0'));
+                bool found = false;
+                for (auto& well : plateData.wells) {
+                    if (well.well == w) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    MergedWellData well;
+                    well.well = w;
+                    well.compound = "Empty";
+                    well.cleanCompound = "Empty";
+                    well.type = "empty";
+                    well.replicate = 1;
+                    well.rawSignal = rawValuesMap.value(w, -1.0);
+                    if (plateFeedingValues.contains(plateData.barcode) && plateFeedingValues[plateData.barcode].contains(w)) {
+                        well.feedingDensity = plateFeedingValues[plateData.barcode][w];
+                        well.hasFeeding = true;
+                    }
+                    plateData.wells.append(well);
+                }
+            }
+        }
+
+        // Sort wells to ensure consistent output order (e.g. A01, A02 ... P24)
+        std::sort(plateData.wells.begin(), plateData.wells.end(), [](const MergedWellData& a, const MergedWellData& b) {
+            if (a.well.length() != b.well.length()) return a.well.length() < b.well.length();
+            return a.well < b.well;
+        });
 
         plates.append(plateData);
     }
@@ -539,17 +609,13 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
         }
     }
 
-    // Determine plate format (96 or 384) based on well size
+    // Validate plateFormat against actual data max just in case
     int maxWells = 0;
     for (const auto& p : plates) {
         if (p.wells.size() > maxWells) maxWells = p.wells.size();
     }
-    int plateFormat = (maxWells > 96) ? 384 : 96;
-
-    // Determine test ID
-    QString testId = "";
-    if (expObj.contains("test_id")) {
-        testId = expObj.value("test_id").toString();
+    if (maxWells > 96 && plateFormat == 96) {
+        plateFormat = 384;
     }
 
     // 3) Call module factory
@@ -643,6 +709,7 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
     // Build final output
     result = strategyRes;
     result["merged_files"] = mergedPaths;
+    result["plate_format"] = plateFormat;
     result["success"] = true;
 
     return result;

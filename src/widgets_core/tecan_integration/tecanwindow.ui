@@ -101,6 +101,7 @@
    </attribute>
    <addaction name="actionSave" />
    <addaction name="actionLoad" />
+   <addaction name="actionLoad_External" />
    <addaction name="actionGenerate_GWL" />
    <addaction name="actionCreate_Plate_Map" />
   </widget>
@@ -119,7 +120,16 @@
      <normaloff>:/icons/resources/icons/dossier.png</normaloff>:/icons/resources/icons/dossier.png</iconset>
    </property>
    <property name="text">
-    <string>Load</string>
+    <string>Load DB</string>
+   </property>
+  </action>
+  <action name="actionLoad_External">
+   <property name="icon">
+    <iconset resource="../../resources.qrc">
+     <normaloff>:/icons/resources/icons/dossier.png</normaloff>:/icons/resources/icons/dossier.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load External JSON</string>
    </property>
   </action>
   <action name="actionGenerate_GWL">

@@ -246,9 +246,11 @@ qt_add_qml_module(Helix
         qml/pages/CalendarPage.qml
         qml/pages/PublishResultsPage.qml
         qml/pages/PublishDetailPage.qml
+        qml/pages/StandaloneAnalysisPage.qml
         qml/pages/WallboardPage.qml
 
         qml/components/TestCard.qml
+        qml/components/PlateHeatmap.qml
         qml/components/StatusPill.qml
         qml/components/CompoundRow.qml
         qml/components/PlanningCalendar.qml

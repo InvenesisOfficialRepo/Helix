@@ -21,18 +21,24 @@ Page {
     property url expJsonUrl: ""
     property string expJsonName: ""
     property string selectedTimepoint: "24h"
-    
-    // PDF Report URL for publishing
-    property url selectedPdfUrl: ""
-    property string selectedPdfName: ""
 
     // Results state
     property string selectedCompoundName: ""
     property int selectedPlateNum: 1
     property var currentPlateWells: ({})
 
-    readonly property bool isDone: App.project.overallStatus === "Done"
-    readonly property bool hasReport: App.project.hasReport
+    readonly property bool isDone: false
+    readonly property bool hasReport: false
+
+    Component.onCompleted: {
+        App.project.loadBatch("")
+        var codes = App.project.availableTestCodes()
+        testTypeCombo.model = codes
+        if (codes.length > 0) {
+            App.project.setTestCode(codes[0])
+            testTypeCombo.currentIndex = 0
+        }
+    }
 
     // Custom Graph Styling Properties
     property color graphBgColor: Style.panel2
@@ -260,19 +266,6 @@ Page {
     Connections {
         target: App.project
         
-        function onPublishFinished(success, errorMsg) {
-            if (success) {
-                root.layoutUrls = []
-                root.rawDataUrls = []
-                root.feedingDataUrls = []
-                root.expJsonUrl = ""
-                root.expJsonName = ""
-                root.selectedPdfUrl = ""
-                root.selectedPdfName = ""
-                popPage()
-            }
-        }
-
         function onAnalysisResultsChanged() {
             if (App.project.hasResults) {
                 var cmps = App.project.analysisResults.compounds || [];
@@ -317,15 +310,7 @@ Page {
         }
     }
 
-    FileDialog {
-        id: pdfDialog
-        title: "Select Bioactivity PDF Report"
-        nameFilters: ["PDF reports (*.pdf)"]
-        onAccepted: {
-            root.selectedPdfUrl = selectedFile
-            root.selectedPdfName = ("" + selectedFile).split("/").pop()
-        }
-    }
+
 
     FeedingAnalysisWindow {
         id: feedingWindow
@@ -432,17 +417,8 @@ Page {
         spacing: Style.pad
 
         ProjectHeader {
-            title: "Analyze & Publish Batch"
+            title: "Standalone Offline Analysis"
             onBackClicked: popPage()
-        }
-
-        ProjectInfoCard {
-            batchId: App.project.batchId
-            projectCode: "Project: " + App.project.projectCode
-            testCode: App.project.testCode
-            overallStatus: App.project.overallStatus
-            scheduledFor: App.project.scheduledFor
-            createdBy: App.project.createdBy
         }
 
         // Beautiful Wizard Progress Header
@@ -462,29 +438,22 @@ Page {
                 StepIndicator {
                     stepNumber: 1
                     title: "Load Inputs"
-                    active: !root.hasReport && !App.project.hasResults
-                    completed: root.hasReport || App.project.hasResults
+                    active: !App.project.hasResults
+                    completed: App.project.hasResults
                 }
-                Rectangle { height: 2; Layout.fillWidth: true; color: (root.hasReport || App.project.hasResults) ? Style.accent : Style.border }
+                Rectangle { height: 2; Layout.fillWidth: true; color: App.project.hasResults ? Style.accent : Style.border }
                 StepIndicator {
                     stepNumber: 2
                     title: "Run Analysis"
-                    active: !root.hasReport && App.project.busy
-                    completed: root.hasReport || App.project.hasResults
+                    active: App.project.busy
+                    completed: App.project.hasResults
                 }
-                Rectangle { height: 2; Layout.fillWidth: true; color: (root.hasReport || App.project.hasResults) ? Style.accent : Style.border }
+                Rectangle { height: 2; Layout.fillWidth: true; color: App.project.hasResults ? Style.accent : Style.border }
                 StepIndicator {
                     stepNumber: 3
                     title: "Inspect Results"
-                    active: !root.hasReport && App.project.hasResults && root.selectedPdfUrl === ""
-                    completed: root.hasReport || (App.project.hasResults && root.selectedPdfUrl !== "")
-                }
-                Rectangle { height: 2; Layout.fillWidth: true; color: (root.hasReport || root.selectedPdfUrl !== "") ? Style.accent : Style.border }
-                StepIndicator {
-                    stepNumber: 4
-                    title: "Publish"
-                    active: !root.hasReport && App.project.hasResults && root.selectedPdfUrl !== ""
-                    completed: root.hasReport
+                    active: App.project.hasResults
+                    completed: App.project.hasResults
                 }
             }
         }
@@ -510,7 +479,7 @@ Page {
                 Rectangle {
                     visible: !root.hasReport
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 330
+                    Layout.preferredHeight: 360
                     radius: 12
                     color: Style.panel
                     border.color: Style.border
@@ -623,23 +592,55 @@ Page {
                             }
                         }
 
-                        // Timepoint Selector Row
+                        // Test Type & Timepoint Selector Row
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
-                            Label {
-                                text: "Timepoint:"
-                                font.family: Style.fontPrimaryBold
-                                font.pixelSize: Style.fontXs
-                                color: Style.text
-                            }
-                            ComboBox {
-                                id: timepointCombo
+                            spacing: 16
+
+                            RowLayout {
                                 Layout.fillWidth: true
-                                model: ["6h", "24h", "48h", "72h", "96h"]
-                                currentIndex: 1 // default 24h
-                                onCurrentIndexChanged: {
-                                    root.selectedTimepoint = currentText;
+                                spacing: 8
+                                Label {
+                                    text: "Test Type:"
+                                    font.family: Style.fontPrimaryBold
+                                    font.pixelSize: Style.fontXs
+                                    color: Style.text
+                                }
+                                ComboBox {
+                                    id: testTypeCombo
+                                    Layout.fillWidth: true
+                                    model: App.project.availableTestCodes()
+                                    onCurrentIndexChanged: {
+                                        if (currentIndex >= 0 && currentIndex < model.length) {
+                                            App.project.setTestCode(model[currentIndex])
+                                        }
+                                    }
+                                    Component.onCompleted: {
+                                        if (model.length > 0) {
+                                            currentIndex = 0;
+                                            App.project.setTestCode(model[0]);
+                                        }
+                                    }
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+                                Label {
+                                    text: "Timepoint:"
+                                    font.family: Style.fontPrimaryBold
+                                    font.pixelSize: Style.fontXs
+                                    color: Style.text
+                                }
+                                ComboBox {
+                                    id: timepointCombo
+                                    Layout.fillWidth: true
+                                    model: ["6h", "24h", "48h", "72h", "96h"]
+                                    currentIndex: 1 // default 24h
+                                    onCurrentIndexChanged: {
+                                        root.selectedTimepoint = currentText;
+                                    }
                                 }
                             }
                         }
@@ -655,14 +656,13 @@ Page {
                     color: Style.panel
                     border.color: Style.border
                     border.width: 1
-
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 16
                         spacing: 12
 
                         Label {
-                            text: "2. Process & Publish"
+                            text: "2. Process Data"
                             font.family: Style.fontPrimaryBold
                             font.pixelSize: Style.fontMd
                             color: Style.text
@@ -677,125 +677,6 @@ Page {
                             }
                         }
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 1
-                            color: Style.border
-                        }
-
-                        Label {
-                            text: "3. Choose Bioactivity PDF Report"
-                            font.family: Style.fontPrimaryBold
-                            font.pixelSize: Style.fontSm
-                            color: Style.text
-                            visible: App.project.hasResults
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 48
-                            color: Style.panel2
-                            border.color: root.selectedPdfUrl !== "" ? Style.accent : Style.border
-                            radius: 6
-                            visible: App.project.hasResults
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: 8
-                                Text {
-                                    text: root.selectedPdfName !== "" ? root.selectedPdfName : "Select Bioactivity PDF"
-                                    font.family: Style.fontSecondary
-                                    font.pixelSize: Style.fontXs
-                                    color: root.selectedPdfUrl !== "" ? Style.text : Style.subText
-                                    elide: Text.ElideMiddle
-                                    Layout.fillWidth: true
-                                }
-                                Button {
-                                    text: "Browse"
-                                    onClicked: pdfDialog.open()
-                                }
-                            }
-                        }
-
-                        Item { Layout.fillHeight: true }
-
-                        Button {
-                            text: "Publish Results"
-                            Layout.fillWidth: true
-                            highlighted: true
-                            enabled: App.project.hasResults && root.selectedPdfUrl !== "" && !App.project.busy
-                            onClicked: {
-                                // Publishes result with generated plate CSVs (from pipeline) and the PDF report
-                                App.project.publishResults(root.selectedPdfUrl, App.project.analysisResults.merged_files)
-                            }
-                        }
-                    }
-                }
-
-                // Already Published View
-                Rectangle {
-                    visible: root.hasReport
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    radius: 12
-                    color: Style.panel
-                    border.color: Style.border
-                    border.width: 1
-                    
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 24
-                        spacing: 16
-                        
-                        Item { Layout.fillHeight: true }
-                        
-                        Rectangle {
-                            width: 64
-                            height: 64
-                            radius: 32
-                            color: Style.wash(0.1, 0.15)
-                            border.color: Style.accent
-                            border.width: 2
-                            Layout.alignment: Qt.AlignHCenter
-                            
-                            Text {
-                                anchors.centerIn: parent
-                                text: "check"
-                                font.family: Style.iconFontFamily
-                                font.pixelSize: 32
-                                color: Style.accent
-                            }
-                        }
-                        
-                        Label {
-                            text: "Analysis Already Published"
-                            font.family: Style.fontPrimaryBold
-                            font.pixelSize: Style.fontLg
-                            color: Style.text
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        
-                        Text {
-                            text: "This batch has been successfully analyzed and its results are published to the client portal.\n\nIf the data contains errors or you need to perform a new test run, you can reject the current results. This will delete all published efficacies, plate layout files, and the PDF report, and reset the batch status back to active."
-                            font.family: Style.fontSecondary
-                            font.pixelSize: Style.fontSm
-                            color: Style.subText
-                            wrapMode: Text.WordWrap
-                            horizontalAlignment: Text.AlignHCenter
-                            Layout.fillWidth: true
-                        }
-                        
-                        Item { height: 16 }
-                        
-                        Button {
-                            text: "Reject & Redo Test"
-                            Layout.fillWidth: true
-                            Layout.maximumWidth: 240
-                            Layout.alignment: Qt.AlignHCenter
-                            highlighted: true
-                            enabled: !App.project.busy
-                            onClicked: App.project.rejectAndRedoBatch()
-                        }
-                        
                         Item { Layout.fillHeight: true }
                     }
                 }
@@ -1163,98 +1044,19 @@ Page {
                                         }
                                     }
 
-                                    // 96-well visualizer grid layout
-                                    Column {
-                                        spacing: 4
-                                        Layout.alignment: Qt.AlignHCenter
-                                        Layout.fillHeight: true
+                                    // Dynamic Plate Heatmap Grid
+                                    PlateHeatmap {
+                                        plateFormat: App.project.analysisResults.plate_format || 96
+                                        currentPlateWells: root.currentPlateWells
+                                        selectedCompoundName: root.selectedCompoundName
+                                        getEfficacyColor: root.getEfficacyColor
 
-                                        // Column Headers (1 to 12)
-                                        Row {
-                                            spacing: 4
-                                            Item { width: 20; height: 20 } // Spacer for row letters
-                                            Repeater {
-                                                model: 12
-                                                Text {
-                                                    text: modelData + 1
-                                                    font.family: Style.fontPrimaryBold
-                                                    font.pixelSize: 10
-                                                    color: Style.subText
-                                                    width: 28
-                                                    height: 20
-                                                    horizontalAlignment: Text.AlignHCenter
-                                                    verticalAlignment: Text.AlignVCenter
-                                                }
-                                            }
-                                        }
-
-                                        // Rows A to H
-                                        Repeater {
-                                            model: 8 // A-H
-                                            
-                                            Row {
-                                                spacing: 4
-                                                property int rIdx: modelData
-                                                property string rowLetter: String.fromCharCode(65 + rIdx)
-
-                                                // Row Header label (A, B, C...)
-                                                Text {
-                                                    text: parent.rowLetter
-                                                    font.family: Style.fontPrimaryBold
-                                                    font.pixelSize: 10
-                                                    color: Style.subText
-                                                    width: 20
-                                                    height: 28
-                                                    horizontalAlignment: Text.AlignHCenter
-                                                    verticalAlignment: Text.AlignVCenter
-                                                }
-
-                                                // Wells
-                                                Repeater {
-                                                    model: 12 // Cols 1-12
-                                                    
-                                                    Rectangle {
-                                                        width: 28
-                                                        height: 28
-                                                        radius: 14
-                                                        
-                                                        property int cIdx: modelData + 1
-                                                        property string colStr: cIdx < 10 ? "0" + cIdx : "" + cIdx
-                                                        property string wellKey: parent.rowLetter + colStr
-                                                        property var wellData: root.currentPlateWells[wellKey] || null
-                                                        
-                                                        color: wellData ? root.getEfficacyColor(wellData.efficacy) : (Style.isDark ? "#1e293b" : "#e2e8f0")
-                                                        border.color: wellData && wellData.compound === root.selectedCompoundName ? Style.accent : (wellHoverArea.containsMouse ? Style.accent2 : Style.border)
-                                                        border.width: wellData && wellData.compound === root.selectedCompoundName ? 2.0 : 1.0
-                                                        
-                                                        MouseArea {
-                                                            id: wellHoverArea
-                                                            anchors.fill: parent
-                                                            hoverEnabled: true
-                                                            onClicked: {
-                                                                if (parent.wellData && parent.wellData.compound !== "Empty" && parent.wellData.compound !== "DMSO") {
-                                                                    root.selectedCompoundName = parent.wellData.compound;
-                                                                    root.updateCurves(root.selectedCompoundName);
-                                                                }
-                                                            }
-                                                        }
-                                                        
-                                                        ToolTip {
-                                                            visible: wellHoverArea.containsMouse && parent.wellData !== null
-                                                            delay: 100
-                                                            text: parent.wellData ? 
-                                                                  "Well: " + parent.wellKey + "\n" +
-                                                                  "Compound: " + parent.wellData.compound + "\n" +
-                                                                  "Dose: " + (parent.wellData.dose > 0 ? parent.wellData.dose + " uM" : "N/A") + "\n" +
-                                                                  "Efficacy: " + parent.wellData.efficacy.toFixed(1) + "%" 
-                                                                  : ""
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                        onCompoundSelected: (compoundName) => {
+                                            root.selectedCompoundName = compoundName;
+                                            root.updateCurves(compoundName);
                                         }
                                     }
-
+                                    
                                     // Heatmap gradient legend
                                     RowLayout {
                                         Layout.alignment: Qt.AlignHCenter

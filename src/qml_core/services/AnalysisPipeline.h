@@ -21,5 +21,6 @@ public:
                                         const QUrl& expJsonUrl,
                                         const QString& timepoint,
                                         const QString& batchId,
-                                        const QVariantList& feedingDataCsvs = QVariantList());
+                                        const QVariantList& feedingDataCsvs = QVariantList(),
+                                        const QString& overrideTestId = QString());
 };

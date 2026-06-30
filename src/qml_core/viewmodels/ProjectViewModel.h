@@ -46,6 +46,9 @@ public:
     bool hasReport() const;
     int estimatedTestPlates() const;
 
+    Q_INVOKABLE void setTestCode(const QString& code);
+    Q_INVOKABLE QStringList availableTestCodes() const;
+
     Q_INVOKABLE void loadBatch(const QString& batchId);
     Q_INVOKABLE void selectAllPending();
     Q_INVOKABLE void sendSelected(const QDate &date);

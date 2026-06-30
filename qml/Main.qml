@@ -24,6 +24,7 @@ ApplicationWindow {
 
     property alias appStack: stack
     property var dashboardWindowInstance: null
+    property var standaloneWindowInstance: null
 
     function launchDashboardWindow() {
         if (dashboardWindowInstance === null) {
@@ -35,6 +36,18 @@ ApplicationWindow {
         dashboardWindowInstance.show()
         dashboardWindowInstance.raise()
         dashboardWindowInstance.requestActivate()
+    }
+
+    function launchStandaloneAnalysis() {
+        if (standaloneWindowInstance === null) {
+            standaloneWindowInstance = standaloneWindowComponent.createObject(null)
+            standaloneWindowInstance.closing.connect(function() {
+                standaloneWindowInstance = null
+            })
+        }
+        standaloneWindowInstance.show()
+        standaloneWindowInstance.raise()
+        standaloneWindowInstance.requestActivate()
     }
 
     StackView {
@@ -80,6 +93,31 @@ ApplicationWindow {
                 id: stack // Named 'stack' so inner views can call stack.push/pop dynamically
                 anchors.fill: parent
                 initialItem: DashboardPage {}
+            }
+        }
+    }
+
+    Component {
+        id: standaloneWindowComponent
+        ApplicationWindow {
+            id: standWin
+            width: 1400
+            height: 900
+            visible: false
+            title: "Standalone Offline Analysis"
+
+            Material.theme: Style.isDark ? Material.Dark : Material.Light
+            Material.accent: Style.accent
+            Material.primary: Style.accent2
+
+            color: Style.bg
+
+            property alias appStack: stack
+
+            StackView {
+                id: stack
+                anchors.fill: parent
+                initialItem: "pages/StandaloneAnalysisPage.qml"
             }
         }
     }
