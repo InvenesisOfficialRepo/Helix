@@ -28,12 +28,29 @@ static QString getCleanName(const QString& name) {
 
 static QString toLocalFileHelper(const QVariant& var) {
     if (var.typeId() == QMetaType::QUrl) {
-        return var.toUrl().toLocalFile();
+        QUrl url = var.toUrl();
+        QString localFile = url.toLocalFile();
+        if (!localFile.isEmpty()) {
+            return localFile;
+        }
+        // Fallback for QUrl parsed from raw Windows path (e.g. "C:\...")
+        if (url.scheme().length() == 1) {
+            QString path = url.scheme() + ":" + url.path();
+            path.replace("\\", "/");
+            return path;
+        }
+        return url.toString(QUrl::FullyDecoded);
     }
+    
+    // Fallback: the QVariant might be a string.
     QString str = var.toString();
+    str.replace("\\", "/"); // Sanitize backslashes to forward slashes
+    
     if (str.startsWith("file://", Qt::CaseInsensitive)) {
         return QUrl(str).toLocalFile();
     }
+    
+    // If it's something like "C:/path/...", just return it directly.
     return str;
 }
 

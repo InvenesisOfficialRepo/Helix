@@ -331,9 +331,19 @@ void ProjectViewModel::publishResults(const QUrl& pdfUrl, const QVariantList& ra
     for (int i = 0; i < rawPlateUrls.size(); ++i) {
         QString localPath;
         if (rawPlateUrls[i].typeId() == QMetaType::QUrl) {
-            localPath = rawPlateUrls[i].toUrl().toLocalFile();
+            QUrl url = rawPlateUrls[i].toUrl();
+            localPath = url.toLocalFile();
+            if (localPath.isEmpty()) {
+                if (url.scheme().length() == 1) {
+                    localPath = url.scheme() + ":" + url.path();
+                    localPath.replace("\\", "/");
+                } else {
+                    localPath = url.toString(QUrl::FullyDecoded);
+                }
+            }
         } else {
             QString str = rawPlateUrls[i].toString();
+            str.replace("\\", "/");
             if (str.startsWith("file://", Qt::CaseInsensitive)) {
                 localPath = QUrl(str).toLocalFile();
             } else {
@@ -376,11 +386,17 @@ bool ProjectViewModel::exportAnalysis(const QUrl& folderUrl)
 {
     QString folderPath = folderUrl.toLocalFile();
     if (folderPath.isEmpty()) {
-        QString str = folderUrl.toString();
-        if (str.startsWith("file://", Qt::CaseInsensitive)) {
-            folderPath = QUrl(str).toLocalFile();
+        if (folderUrl.scheme().length() == 1) {
+            folderPath = folderUrl.scheme() + ":" + folderUrl.path();
+            folderPath.replace("\\", "/");
         } else {
-            folderPath = str;
+            QString str = folderUrl.toString();
+            str.replace("\\", "/");
+            if (str.startsWith("file://", Qt::CaseInsensitive)) {
+                folderPath = QUrl(str).toLocalFile();
+            } else {
+                folderPath = str;
+            }
         }
     }
     
