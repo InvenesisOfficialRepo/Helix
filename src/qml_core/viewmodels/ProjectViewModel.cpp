@@ -329,8 +329,17 @@ void ProjectViewModel::publishResults(const QUrl& pdfUrl, const QVariantList& ra
 
     QVariantList rawPlates;
     for (int i = 0; i < rawPlateUrls.size(); ++i) {
-        QUrl url = rawPlateUrls[i].toUrl();
-        QString localPath = url.toLocalFile();
+        QString localPath;
+        if (rawPlateUrls[i].typeId() == QMetaType::QUrl) {
+            localPath = rawPlateUrls[i].toUrl().toLocalFile();
+        } else {
+            QString str = rawPlateUrls[i].toString();
+            if (str.startsWith("file://", Qt::CaseInsensitive)) {
+                localPath = QUrl(str).toLocalFile();
+            } else {
+                localPath = str;
+            }
+        }
         if (!localPath.isEmpty()) {
             QVariantMap pm;
             pm["plate_name"] = QString("Test Plate %1").arg(i + 1);
@@ -366,6 +375,15 @@ void ProjectViewModel::rejectAndRedoBatch()
 bool ProjectViewModel::exportAnalysis(const QUrl& folderUrl)
 {
     QString folderPath = folderUrl.toLocalFile();
+    if (folderPath.isEmpty()) {
+        QString str = folderUrl.toString();
+        if (str.startsWith("file://", Qt::CaseInsensitive)) {
+            folderPath = QUrl(str).toLocalFile();
+        } else {
+            folderPath = str;
+        }
+    }
+    
     if (folderPath.isEmpty() || analysisResults_.isEmpty()) {
         return false;
     }

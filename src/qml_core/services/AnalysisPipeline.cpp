@@ -26,6 +26,17 @@ static QString getCleanName(const QString& name) {
     return clean.trimmed();
 }
 
+static QString toLocalFileHelper(const QVariant& var) {
+    if (var.typeId() == QMetaType::QUrl) {
+        return var.toUrl().toLocalFile();
+    }
+    QString str = var.toString();
+    if (str.startsWith("file://", Qt::CaseInsensitive)) {
+        return QUrl(str).toLocalFile();
+    }
+    return str;
+}
+
 static void parseWellTypeAndName(const QString& alias, const QString& userdef1, QString& outBaseName, QString& outType, int& outRep) {
     QString trimmedAlias = alias.trimmed();
     QString trimmedUserdef1 = userdef1.trimmed();
@@ -226,7 +237,7 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
     // Parse feeding data CSVs if provided
     QMap<QString, QMap<QString, double>> plateFeedingValues; // plate barcode -> well -> feeding density
     for (const QVariant& feedingUrlVar : feedingDataCsvs) {
-        QString feedingFile = feedingUrlVar.toUrl().toLocalFile();
+        QString feedingFile = toLocalFileHelper(feedingUrlVar);
         QString feedingName = QFileInfo(feedingFile).baseName(); // e.g., "raw_PHC006641"
         QString plateBarcode = feedingName;
         if (plateBarcode.startsWith("raw_", Qt::CaseInsensitive)) {
@@ -313,6 +324,15 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
     // 1) Read experiment.json if available
     QJsonObject expObj;
     QString expJsonPath = expJsonUrl.toLocalFile();
+    if (expJsonPath.isEmpty()) {
+        QString str = expJsonUrl.toString();
+        if (str.startsWith("file://", Qt::CaseInsensitive)) {
+            expJsonPath = QUrl(str).toLocalFile();
+        } else {
+            expJsonPath = str;
+        }
+    }
+    
     if (!expJsonPath.isEmpty()) {
         QFile jsonFile(expJsonPath);
         if (jsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -344,14 +364,14 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
     QMap<QString, QString> layoutToRawMap; // layout base name -> raw file path
 
     for (const QVariant& layoutUrlVar : layoutCsvs) {
-        QString layoutFile = layoutUrlVar.toUrl().toLocalFile();
+        QString layoutFile = toLocalFileHelper(layoutUrlVar);
         QString layoutName = QFileInfo(layoutFile).baseName(); // e.g. "PHC006641"
 
         // Search for matching raw data file
         QString matchedRawFile;
         QStringList candidateRawFiles;
         for (const QVariant& rawUrlVar : rawDataCsvs) {
-            QString rawFile = rawUrlVar.toUrl().toLocalFile();
+            QString rawFile = toLocalFileHelper(rawUrlVar);
             QString rawName = QFileInfo(rawFile).baseName();
             if (rawName.contains(layoutName, Qt::CaseInsensitive) || layoutName.contains(rawName, Qt::CaseInsensitive)) {
                 candidateRawFiles.append(rawFile);
@@ -373,11 +393,11 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
         } else {
             // Fallbacks:
             if (rawDataCsvs.size() == 1) {
-                matchedRawFile = rawDataCsvs.first().toUrl().toLocalFile();
+                matchedRawFile = toLocalFileHelper(rawDataCsvs.first());
             } else if (rawDataCsvs.size() == layoutCsvs.size()) {
                 int idx = layoutCsvs.indexOf(layoutUrlVar);
                 if (idx >= 0 && idx < rawDataCsvs.size()) {
-                    matchedRawFile = rawDataCsvs.at(idx).toUrl().toLocalFile();
+                    matchedRawFile = toLocalFileHelper(rawDataCsvs.at(idx));
                 }
             }
             
