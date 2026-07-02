@@ -27,13 +27,6 @@ static QString getCleanName(const QString& name) {
 }
 
 static QString toLocalFileHelper(const QVariant& var) {
-    if (var.canConvert<QVariantList>()) {
-        QVariantList list = var.toList();
-        if (!list.isEmpty()) {
-            return toLocalFileHelper(list.first());
-        }
-    }
-    
     if (var.typeId() == QMetaType::QUrl) {
         QUrl url = var.toUrl();
         QString localFile = url.toLocalFile();

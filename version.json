@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.1.10",
-  "release_notes": "<h3>Helix Launcher 1.1.10</h3><ul><li>Critical Hotfix: Fixed a bug where compiled QML engine instances incorrectly passed FileDialog list&lt;url&gt; types to the C++ QVariantList backend. QML FileDialogs now explicitly build and pass Javascript Arrays of primitive strings to guarantee correct C++ parsing.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.10/Helix_Setup.exe"
+  "latest_version": "1.1.11",
+  "release_notes": "<h3>Helix Launcher 1.1.11</h3><ul><li>Critical Hotfix 2: Removed an over-aggressive recursive QVariantList check that was inadvertently ripping JavaScript strings into character arrays in C++, causing valid file paths to be parsed as single letters (e.g., 'f' from 'file://').</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.11/Helix_Setup.exe"
 }
