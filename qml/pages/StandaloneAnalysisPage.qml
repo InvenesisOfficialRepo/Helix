@@ -286,7 +286,11 @@ Page {
         nameFilters: ["CSV files (*.csv)"]
         fileMode: FileDialog.OpenFiles
         onAccepted: {
-            root.layoutUrls = selectedFiles
+            var arr = [];
+            for (var i = 0; i < selectedFiles.length; ++i) {
+                arr.push(selectedFiles[i].toString());
+            }
+            root.layoutUrls = arr;
         }
     }
 
@@ -296,7 +300,11 @@ Page {
         nameFilters: ["CSV files (*.csv)"]
         fileMode: FileDialog.OpenFiles
         onAccepted: {
-            root.rawDataUrls = selectedFiles
+            var arr = [];
+            for (var i = 0; i < selectedFiles.length; ++i) {
+                arr.push(selectedFiles[i].toString());
+            }
+            root.rawDataUrls = arr;
         }
     }
 
@@ -305,8 +313,9 @@ Page {
         title: "Select Experiment JSON File"
         nameFilters: ["JSON files (*.json)"]
         onAccepted: {
-            root.expJsonUrl = selectedFile
-            root.expJsonName = ("" + selectedFile).split("/").pop()
+            var urlStr = selectedFile.toString()
+            root.expJsonUrl = urlStr
+            root.expJsonName = urlStr.split("/").pop()
         }
     }
 
@@ -325,9 +334,10 @@ Page {
         title: "Select Folder to Export Analysis"
         onAccepted: {
             exportOverlay.visible = true
-            var ok = App.project.exportAnalysis(selectedFolder)
+            var folderStr = selectedFolder.toString()
+            var ok = App.project.exportAnalysis(folderStr)
             if (ok) {
-                var folderPath = root.urlToLocalPath(selectedFolder)
+                var folderPath = root.urlToLocalPath(folderStr)
                 root.exportAllGraphs(folderPath)
             } else {
                 exportOverlay.visible = false
