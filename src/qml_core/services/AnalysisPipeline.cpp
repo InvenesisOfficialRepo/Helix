@@ -439,7 +439,11 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
         int lUserdef1Idx = findColumnIndex(layoutTable.headers, {"userdefvalue1", "value1"});
 
         if (lWellIdx < 0 || lCmpIdx < 0) {
-            result["error"] = QString("Layout CSV '%1.csv' is missing required columns (Well, Compound)").arg(layoutName);
+            QString typeName = layoutUrlVar.typeName();
+            QString varStr = layoutUrlVar.toString();
+            QString urlStr = layoutUrlVar.toUrl().toString();
+            result["error"] = QString("Layout CSV '%1.csv' is missing required columns (Well, Compound). [DEBUG: layoutFile='%2', type='%3', str='%4', urlStr='%5']")
+                                .arg(layoutName).arg(layoutFile).arg(typeName).arg(varStr).arg(urlStr);
             return result;
         }
 
