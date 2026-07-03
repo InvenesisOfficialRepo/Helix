@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.1.11",
-  "release_notes": "<h3>Helix Launcher 1.1.11</h3><ul><li>Critical Hotfix 2: Removed an over-aggressive recursive QVariantList check that was inadvertently ripping JavaScript strings into character arrays in C++, causing valid file paths to be parsed as single letters (e.g., 'f' from 'file://').</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.11/Helix_Setup.exe"
+  "latest_version": "1.1.12",
+  "release_notes": "<h3>Helix Launcher 1.1.12</h3><ul><li>Fixed a critical bug where QC plate concentrations were being incorrectly diluted across replicates.</li><li>Fixed a similar bug where test plate replicates across multiple rows were treated as a single continuous dilution series.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.12/Helix_Setup.exe"
 }
