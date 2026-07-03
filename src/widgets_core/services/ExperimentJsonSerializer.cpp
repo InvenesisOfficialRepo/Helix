@@ -251,7 +251,16 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
                 QString cmp = it.value().toString().trimmed();
                 if (cmp.isEmpty()) continue;
                 if (cmp.startsWith("DMSO", Qt::CaseInsensitive)) {
-                    concObj[it.key()] = 0.0;
+                    double dmsoConc = 100.0;
+                    if (type == "test" && !testId.isEmpty()) {
+                        const QJsonObject catEntry = catalogue.value(testId).toObject();
+                        double volFromDaughter = catEntry.value("vol_from_daughter_µl").toDouble();
+                        double totalWellVol = catEntry.value("total_well_vol_µl").toDouble();
+                        if (totalWellVol > 0.0) {
+                            dmsoConc = 100.0 * (volFromDaughter / totalWellVol);
+                        }
+                    }
+                    concObj[it.key()] = dmsoConc;
                     continue;
                 }
                 cmpToWells[cmp].append(it.key());

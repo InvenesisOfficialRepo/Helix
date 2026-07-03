@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.1.15",
-  "release_notes": "<h3>Helix Launcher 1.1.15</h3><ul><li>Differentiated dilution curves between standard daughter plates and QC plates. QC compounds will now correctly map directly to their respective <b>qc_plates.json</b> concentration values, applying a precise transfer ratio calculation for the test plate starting concentration, and automatically enforcing the strict 3.16 dilution factor exactly as requested.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.15/Helix_Setup.exe"
+  "latest_version": "1.1.16",
+  "release_notes": "<h3>Helix Launcher 1.1.16</h3><ul><li>Calculated accurate DMSO concentration dynamically based on transfer ratio for test plates. Differentiated dilution curves between standard daughter plates and QC plates. QC compounds will now correctly map directly to their respective <b>qc_plates.json</b> concentration values, applying a precise transfer ratio calculation for the test plate starting concentration, and automatically enforcing the strict 3.16 dilution factor exactly as requested.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.16/Helix_Setup.exe"
 }

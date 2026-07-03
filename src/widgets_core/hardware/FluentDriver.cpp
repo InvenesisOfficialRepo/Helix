@@ -1266,9 +1266,18 @@ bool FluentDriver::generate(const QJsonObject &exp,
       r.u5 = projectCode;
 
       if (baseCmp.compare("DMSO", Qt::CaseInsensitive) == 0) {
-        r.conc = 100.0;
+        double dmsoConc = 100.0;
+        if (!testId.isEmpty()) {
+            const QJsonObject catEntry = catalogue.value(testId).toObject();
+            double volFromDaughter = catEntry.value("vol_from_daughter_µl").toDouble();
+            double totalWellVol = catEntry.value("total_well_vol_µl").toDouble();
+            if (totalWellVol > 0.0) {
+                dmsoConc = 100.0 * (volFromDaughter / totalWellVol);
+            }
+        }
+        r.conc = dmsoConc;
         r.concUnit = "%";
-        r.u3 = "100";
+        r.u3 = QString::number(dmsoConc, 'f', 4);
       }
 
       rows.push_back(r);
