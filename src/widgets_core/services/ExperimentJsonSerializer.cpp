@@ -294,7 +294,11 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
                     }
                 }
 
-                if (isCatalogueStandard && specificTopDose > 0.0 && specificEc50 > 0.0 && specificEc50 < specificTopDose && it.value().size() >= 2) {
+                bool isQcCompound = rawCmp.endsWith("(QC)", Qt::CaseInsensitive);
+
+                if (type == "qc" || isQcCompound) {
+                    dfForChain = 3.16;
+                } else if (isCatalogueStandard && specificTopDose > 0.0 && specificEc50 > 0.0 && specificEc50 < specificTopDose && it.value().size() >= 2) {
                     const int nDil = it.value().size();
                     const double bottom = (specificEc50 * specificEc50) / specificTopDose;
                     dfForChain = std::pow(specificTopDose / bottom, 1.0 / (nDil - 1));
@@ -320,7 +324,29 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
                         }
                     }
                 } else if (type == "test") {
-                    if (isCatalogueStandard && specificTopDose > 0.0)
+                    if (isQcCompound) {
+                        QString qcType = root.value("qc_plate_type").toString();
+                        QJsonObject qcDef = qcPlatesJson.value(qcType).toObject();
+                        double qcStartConc = 0.0;
+                        for (const QString &rowKey : qcDef.keys()) {
+                            QJsonObject rowDef = qcDef.value(rowKey).toObject();
+                            if (rowDef.value("standard").toString().compare(baseCmp, Qt::CaseInsensitive) == 0) {
+                                qcStartConc = rowDef.value("conc").toVariant().toDouble();
+                                break;
+                            }
+                        }
+                        
+                        double transferRatio = 0.0;
+                        if (!cmpTestId.isEmpty()) {
+                            const QJsonObject catEntry = catalogue.value(cmpTestId).toObject();
+                            double volFromDaughter = catEntry.value("vol_from_daughter_µl").toDouble();
+                            double totalWellVol = catEntry.value("total_well_vol_µl").toDouble();
+                            if (totalWellVol > 0.0) {
+                                transferRatio = volFromDaughter / totalWellVol;
+                            }
+                        }
+                        startConc = qcStartConc * transferRatio;
+                    } else if (isCatalogueStandard && specificTopDose > 0.0)
                         startConc = specificTopDose;
                     else if (isStandard && stdTopDoseMicroM > 0.0)
                         startConc = stdTopDoseMicroM;
