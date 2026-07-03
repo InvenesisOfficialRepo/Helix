@@ -23,22 +23,22 @@
 
         "Emodepsid 8000": {
         "C": {
-            "standard": "Emodepsid",
+            "standard": "emodepside",
             "conc": 8000
         },
         "F": {
-            "standard": "Emodepsid",
+            "standard": "emodepside",
             "conc": 8000
         }
     },
 
             "Emodepsid 20000": {
         "C": {
-            "standard": "Emodepsid",
+            "standard": "emodepside",
             "conc": 20000
         },
         "F": {
-            "standard": "Emodepsid",
+            "standard": "emodepside",
             "conc": 20000
         }
     },

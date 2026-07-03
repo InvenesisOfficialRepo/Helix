@@ -279,7 +279,26 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
                     }
                 }
 
-                if (isStandard && stdTopDoseMicroM > 0.0 && stdEc50MicroM > 0.0
+                double specificTopDose = 0.0;
+                double specificEc50 = 0.0;
+                bool isCatalogueStandard = false;
+                if (!cmpTestId.isEmpty()) {
+                    const QJsonObject stdSpecs = catalogue.value(cmpTestId).toObject().value("standards").toObject();
+                    for (const QString &key : stdSpecs.keys()) {
+                        if (baseCmp.compare(key, Qt::CaseInsensitive) == 0) {
+                            specificTopDose = stdSpecs.value(key).toObject().value("top_dose_uM").toVariant().toDouble();
+                            specificEc50 = stdSpecs.value(key).toObject().value("ec50_uM").toVariant().toDouble();
+                            isCatalogueStandard = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isCatalogueStandard && specificTopDose > 0.0 && specificEc50 > 0.0 && specificEc50 < specificTopDose && it.value().size() >= 2) {
+                    const int nDil = it.value().size();
+                    const double bottom = (specificEc50 * specificEc50) / specificTopDose;
+                    dfForChain = std::pow(specificTopDose / bottom, 1.0 / (nDil - 1));
+                } else if (isStandard && stdTopDoseMicroM > 0.0 && stdEc50MicroM > 0.0
                     && stdEc50MicroM < stdTopDoseMicroM
                     && it.value().size() >= 2) {
                     const int nDil = it.value().size();
@@ -295,24 +314,31 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
                     QJsonObject qcDef = qcPlatesJson.value(qcType).toObject();
                     for (const QString &rowKey : qcDef.keys()) {
                         QJsonObject rowDef = qcDef.value(rowKey).toObject();
-                        if (rowDef.value("standard").toString() == baseCmp) {
+                        if (rowDef.value("standard").toString().compare(baseCmp, Qt::CaseInsensitive) == 0) {
                             startConc = rowDef.value("conc").toVariant().toDouble();
                             break;
                         }
                     }
                 } else if (type == "test") {
-                    if (isStandard && stdTopDoseMicroM > 0.0)
+                    if (isCatalogueStandard && specificTopDose > 0.0)
+                        startConc = specificTopDose;
+                    else if (isStandard && stdTopDoseMicroM > 0.0)
                         startConc = stdTopDoseMicroM;
                     else
                         startConc = cmpStartConcMicroM;
                 } else if (type == "daughter") {
                     double stock = cmpStockMap.value(lowerCmp, 0.0);
                     double topForBackCalc = cmpStartConcMicroM;
-                    if (isStandard) {
+                    
+                    if (isCatalogueStandard && specificTopDose > 0.0) {
+                        stock = stdStockConc; // Assuming all catalogue standards use the global standard stock concentration for now
+                        topForBackCalc = specificTopDose;
+                    } else if (isStandard) {
                         stock = stdStockConc;
                         if (stdTopDoseMicroM > 0.0)
                             topForBackCalc = stdTopDoseMicroM;
                     }
+                    
                     GWLGenerator::VolumePlanEntry vp;
                     DilutionEngine engine;
                     QString verr;
