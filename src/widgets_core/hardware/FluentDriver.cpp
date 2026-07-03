@@ -1566,6 +1566,24 @@ bool FluentDriver::generate(const QJsonObject &exp,
     fseed.lines = renderSeedAuditCSV(seedAudit);
     fseed.isAux = true;
     outs.push_back(std::move(fseed));
+
+    const QJsonArray plates = exp.value("daughter_plates").toArray();
+    for (int di = 0; di < plates.size(); ++di) {
+      QString targetDaughter = QString("Daughter_%1").arg(di + 1);
+      QList<SeedAuditRow> daughterSeeds;
+      for (const auto &r : seedAudit) {
+        if (r.daughterBarcode == targetDaughter) {
+          daughterSeeds.push_back(r);
+        }
+      }
+      if (!daughterSeeds.isEmpty()) {
+        FileOut fdseed;
+        fdseed.relativePath = QString("dght_%1/SeedVolumes.csv").arg(di);
+        fdseed.lines = renderSeedAuditCSV(daughterSeeds);
+        fdseed.isAux = true;
+        outs.push_back(std::move(fdseed));
+      }
+    }
   }
 
   // ---- Export dilution steps audit ----

@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.1.17",
-  "release_notes": "<h3>Helix Launcher 1.1.17</h3><ul><li>Separated QC and Standard compounds completely in the analysis modules by appending their types to the compound name. QC compounds will now correctly map directly to their respective <b>qc_plates.json</b> concentration values, applying a precise transfer ratio calculation for the test plate starting concentration, and automatically enforcing the strict 3.16 dilution factor exactly as requested.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.17/Helix_Setup.exe"
+  "latest_version": "1.1.18",
+  "release_notes": "<h3>Helix Launcher 1.1.18</h3><ul><li>Added per-daughter SeedVolumes.csv files to the individual dght_ folders during GWL export, alongside the global SeedVolumes.csv file. QC compounds will now correctly map directly to their respective <b>qc_plates.json</b> concentration values, applying a precise transfer ratio calculation for the test plate starting concentration, and automatically enforcing the strict 3.16 dilution factor exactly as requested.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.18/Helix_Setup.exe"
 }
