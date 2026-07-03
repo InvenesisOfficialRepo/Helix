@@ -333,24 +333,12 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
                 double currentConc = startConc;
                 int lastCol = -1;
                 for (const QString &w : wlist) {
-                    if (type == "qc") {
-                        QString qcType = root.value("qc_plate_type").toString();
-                        QJsonObject qcDef = qcPlatesJson.value(qcType).toObject();
-                        QString rowLetter = w.left(1).toUpper();
-                        QJsonObject rowDef = qcDef.value(rowLetter).toObject();
-                        if (!rowDef.isEmpty() && rowDef.value("standard").toString() == baseCmp) {
-                            concObj[w] = rowDef.value("conc").toVariant().toDouble();
-                        } else {
-                            concObj[w] = startConc;
-                        }
-                    } else {
-                        int col = w.mid(1).toInt();
-                        if (lastCol != -1 && col != lastCol) {
-                            currentConc /= dfForChain;
-                        }
-                        concObj[w] = currentConc;
-                        lastCol = col;
+                    int col = w.mid(1).toInt();
+                    if (lastCol != -1 && col != lastCol) {
+                        currentConc /= dfForChain;
                     }
+                    concObj[w] = currentConc;
+                    lastCol = col;
                 }
             }
             plateObj["concentrations"] = concObj;
