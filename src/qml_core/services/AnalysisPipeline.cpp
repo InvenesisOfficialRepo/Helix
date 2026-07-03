@@ -467,7 +467,13 @@ QVariantMap AnalysisPipeline::runAnalysis(const QVariantList& layoutCsvs,
             int rep = 1;
             parseWellTypeAndName(well.compound, userdef1, baseName, type, rep);
 
-            well.cleanCompound = baseName;
+            if (type == "qc") {
+                well.cleanCompound = baseName + " (QC)";
+            } else if (type == "standard") {
+                well.cleanCompound = baseName + " (Standard)";
+            } else {
+                well.cleanCompound = baseName;
+            }
             well.type = type;
             well.replicate = rep;
 
