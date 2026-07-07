@@ -1,12 +1,13 @@
 #include "standardselectiondialog.h"
 #include "ui_standardselectiondialog.h"
 
-#include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QDebug>
+#include <QSqlDatabase>
+#include "../../shared/ReferenceDataRepository.h"
 
 StandardSelectionDialog::StandardSelectionDialog(QWidget *parent)
     : QDialog(parent),
@@ -28,30 +29,13 @@ StandardSelectionDialog::~StandardSelectionDialog()
 
 void StandardSelectionDialog::loadStandardJson()
 {
-    QFile file(":/data/resources/data/standards_matrix.json");
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to load standard JSON resource.";
+    ReferenceDataRepository repo(QSqlDatabase::database());
+    QJsonArray standards = repo.getStandardsMatrix();
+    if (standards.isEmpty()) {
+        qWarning() << "Failed to load standards from database.";
         ui->comboBox->addItem("Error loading standards");
         return;
     }
-
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
-    file.close();
-
-    if (doc.isNull()) {
-        qWarning() << "Failed to parse JSON:" << error.errorString();
-        ui->comboBox->addItem("Parsing error");
-        return;
-    }
-
-    if (!doc.isArray()) {
-        qWarning() << "Standard JSON is not a JSON array.";
-        ui->comboBox->addItem("Invalid format");
-        return;
-    }
-
-    QJsonArray standards = doc.array();
     for (const QJsonValue &val : standards) {
         QJsonObject obj = val.toObject();
         QString name = obj["Samplealias"].toString().trimmed();

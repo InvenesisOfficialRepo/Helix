@@ -2,7 +2,11 @@
 
 #include <QStandardItemModel>
 #include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QFile>
+#include <QSqlDatabase>
+#include "../../shared/ReferenceDataRepository.h"
 #include "../tecan_integration/gwlgenerator.h" // For concentration calculation dependencies
 
 ExperimentManager::ExperimentManager(QObject* parent)
@@ -227,13 +231,10 @@ QList<QMap<QString, QStringList>> ExperimentManager::calculateInitialDaughterPla
 ExperimentManager::TestPlatesResult ExperimentManager::calculateTestPlates(int dilutionSteps, const QString& testType, const QList<QMap<QString, QStringList>>& daughterPlates, const QJsonObject& qcPlatesJson, const QString& qcType, const QString& standardName) const {
     TestPlatesResult result;
     bool is384Test = false;
-    QFile vocabFile(":/data/resources/data/tests_vocabulary.json");
-    if (vocabFile.open(QIODevice::ReadOnly)) {
-        QJsonObject vocab = QJsonDocument::fromJson(vocabFile.readAll()).object();
-        if (vocab.value(testType).toString() == "384")
-            is384Test = true;
-        vocabFile.close();
-    }
+    ReferenceDataRepository repo(QSqlDatabase::database());
+    QJsonObject vocab = repo.getTestsVocabulary();
+    if (vocab.value(testType).toInt() == 384 || vocab.value(testType).toString() == "384")
+        is384Test = true;
 
     QStringList all96Wells;
     QStringList rows = {"A", "B", "C", "D", "E", "F", "G", "H"};

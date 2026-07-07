@@ -11,6 +11,8 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QSqlDatabase>
+#include "../../shared/ReferenceDataRepository.h"
 #include <QtConcurrent/QtConcurrent>
 #include <QFutureWatcher>
 #include <QProgressDialog>
@@ -337,12 +339,10 @@ bool TecanWindow::checkFeasibility() {
     return true;
   }
 
-  QFile catFile(":/data/resources/data/invenesis_catalogue.json");
-  QJsonObject catalogue;
-  if (catFile.open(QIODevice::ReadOnly)) {
-    catalogue = QJsonDocument::fromJson(catFile.readAll()).object();
-  } else {
-    qDebug() << "[checkFeasibility] Warning: Cannot open catalogue file. Skipping check.";
+  ReferenceDataRepository repo(QSqlDatabase::database());
+  QJsonObject catalogue = repo.getCatalogue();
+  if (catalogue.isEmpty()) {
+    qDebug() << "[checkFeasibility] Warning: Cannot load catalogue from db. Skipping check.";
     return true; // if we can't open catalogue, skip check
   }
 
@@ -1167,10 +1167,10 @@ bool TecanWindow::markTestRequestsDoneFromJson(const QJsonObject &experimentJson
 }
 
 void TecanWindow::loadQcPlatesConfig() {
-  QFile qcFile(":/data/resources/data/qc_plates.json");
-  if (qcFile.open(QIODevice::ReadOnly)) {
-    m_viewModel->setQcPlatesJson(QJsonDocument::fromJson(qcFile.readAll()).object());
-    qcFile.close();
+  ReferenceDataRepository repo(QSqlDatabase::database());
+  QJsonObject qcObj = repo.getQcPlates();
+  if (!qcObj.isEmpty()) {
+    m_viewModel->setQcPlatesJson(qcObj);
 
     qcSelectionCombo->blockSignals(true);
     qcSelectionCombo->clear();
@@ -1211,12 +1211,9 @@ void TecanWindow::populateTestPlates(int dilutionSteps, const QString &testType,
   qcPlatesLayout->addWidget(qcPlateWidget);
 
   bool is384Test = false;
-  QFile vocabFile(":/data/resources/data/tests_vocabulary.json");
-  if (vocabFile.open(QIODevice::ReadOnly)) {
-      QJsonObject vocab = QJsonDocument::fromJson(vocabFile.readAll()).object();
-      if (vocab.value(testType).toString() == "384") is384Test = true;
-      vocabFile.close();
-  }
+  ReferenceDataRepository repo(QSqlDatabase::database());
+  QJsonObject vocab = repo.getTestsVocabulary();
+  if (vocab.value(testType).toInt() == 384 || vocab.value(testType).toString() == "384") is384Test = true;
 
   for (int i = 0; i < res.testPlates.size(); ++i) {
       auto *testWidget = new DaughterPlateWidget(i + 1, this);

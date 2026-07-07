@@ -3,17 +3,17 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QVector>
+#include "../db/DatabaseManager.h"
+#include "../../shared/ReferenceDataRepository.h"
 
 int PlateCalculator::estimateTestPlatesCount(const QString& testType, const QList<CompoundInfo>& compounds) {
     if (compounds.isEmpty()) return 0;
 
     bool is384 = false;
-    QFile vocabFile(":/data/resources/data/tests_vocabulary.json");
-    if (vocabFile.open(QIODevice::ReadOnly)) {
-        QJsonObject vocab = QJsonDocument::fromJson(vocabFile.readAll()).object();
-        if (vocab.value(testType).toString() == "384")
-            is384 = true;
-        vocabFile.close();
+    ReferenceDataRepository repo(DatabaseManager::db("QPSQL"));
+    QJsonObject vocab = repo.getTestsVocabulary();
+    if (vocab.value(testType).toInt() == 384) {
+        is384 = true;
     }
 
     const int maxColumns = 12; // daughter plate is always 96 well (12 cols, 8 rows)

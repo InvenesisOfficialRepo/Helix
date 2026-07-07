@@ -1,14 +1,19 @@
 #include "FluentDriver.h"
+#include "../services/DilutionEngine.h"
+#include "../services/gwl_helpers.h"
+#include "../../shared/ReferenceDataRepository.h"
+#include <QDate>
+#include <QDebug>
+#include <QDir>
+#include <QSqlDatabase>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QFile>
-#include <QDir>
 #include <QTextStream>
 #include <cmath>
 #include <QDateTime>
 
-#include "../services/gwl_helpers.h"
 #include "../tecan_integration/gwlgenerator.h"
 
 using FileOut = GWLGenerator::FileOut;
@@ -92,21 +97,9 @@ bool FluentDriver::generate(const QJsonObject &exp,
     }
   }
 
-  // ---- Load invenesis_catalogue.json once for the entire generate() call ----
-  // Previously loadVolumePlan() opened and parsed this file on every call (once
-  // per compound per call site). With N compounds and 3 call sites that is O(N)
-  // redundant file I/O per generate() invocation. Load it here and pass it down
-  // instead.
-  QJsonObject catalogue;
-  {
-    QFile catFile(":/data/resources/data/invenesis_catalogue.json");
-    if (!catFile.open(QIODevice::ReadOnly)) {
-      qWarning() << "[WARN] Cannot open invenesis_catalogue.json — volume "
-                    "plans will use fallback";
-    } else {
-      catalogue = QJsonDocument::fromJson(catFile.readAll()).object();
-    }
-  }
+  // ---- Load invenesis_catalogue once for the entire generate() call ----
+  ReferenceDataRepository repo(QSqlDatabase::database());
+  QJsonObject catalogue = repo.getCatalogue();
 
   // ---- DMSO control well volume (independent of compound rules) ----
   // Rule: max(15 µL, vol_from_daughter × 3 × 1.1)

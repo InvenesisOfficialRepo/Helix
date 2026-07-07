@@ -18,11 +18,6 @@
         <file>resources/icons/AppsIcon.png</file>
     </qresource>
     <qresource prefix="/data">
-        <file>resources/data/standards_matrix.json</file>
-        <file>resources/data/volumeMap.json</file>
-        <file>resources/data/invenesis_catalogue.json</file>
-        <file>resources/data/tests_vocabulary.json</file>
-        <file>resources/data/qc_plates.json</file>
     </qresource>
     <qresource prefix="/cert">
         <file>resources/cert/prod-ca-2021.crt</file>

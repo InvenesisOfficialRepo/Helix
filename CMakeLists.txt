@@ -54,6 +54,10 @@ set(APP_SOURCES
     # Master entry
     src/master_hub/main.cpp
 
+    # Shared Sources
+    src/shared/ReferenceDataRepository.h
+    src/shared/ReferenceDataRepository.cpp
+
     # QML Dashboard App C++ Sources
     src/qml_core/app/AppContext.h
     src/qml_core/app/AppContext.cpp

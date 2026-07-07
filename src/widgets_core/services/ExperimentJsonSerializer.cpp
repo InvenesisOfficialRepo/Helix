@@ -3,8 +3,11 @@
 #include "tecan_integration/gwlgenerator.h"
 #include "services/DilutionEngine.h"
 #include "gwl_helpers.h"
+#include "../../shared/ReferenceDataRepository.h"
 
+#include <QSqlDatabase>
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QFile>
 #include <QVariant>
 #include <algorithm>
@@ -197,11 +200,8 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
         );
     }
 
-    QFile catFile(":/data/resources/data/invenesis_catalogue.json");
-    QJsonObject catalogue;
-    if (catFile.open(QIODevice::ReadOnly)) {
-        catalogue = QJsonDocument::fromJson(catFile.readAll()).object();
-    }
+    ReferenceDataRepository repo(QSqlDatabase::database());
+    QJsonObject catalogue = repo.getCatalogue();
 
     QString stdName;
     double stdTopDoseMicroM = 0.0;

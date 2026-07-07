@@ -2,10 +2,10 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QFile>
-#include <QDir>
 #include <QTextStream>
 #include <cmath>
+#include <QSqlDatabase>
+#include "../../shared/ReferenceDataRepository.h"
 
 #include "gwl_helpers.h"
 #include "../tecan_integration/gwlgenerator.h"
@@ -21,21 +21,14 @@ using namespace GWLHelpers;
 
 bool DilutionEngine::loadStandardsMatrix(QVector<StandardSource> &standards,
                                        QString *err) const {
-  QFile f(":/data/resources/data/standards_matrix.json");
-  if (!f.open(QIODevice::ReadOnly)) {
+  ReferenceDataRepository repo(QSqlDatabase::database());
+  QJsonArray arr = repo.getStandardsMatrix();
+  if (arr.isEmpty()) {
     if (err)
-      *err = "Cannot open standards_matrix.json";
+      *err = "standards_matrix could not be loaded from database";
     return false;
   }
 
-  const auto doc = QJsonDocument::fromJson(f.readAll());
-  if (!doc.isArray()) {
-    if (err)
-      *err = "standards_matrix.json is not an array";
-    return false;
-  }
-
-  const auto arr = doc.array();
   for (const auto &val : arr) {
     const auto obj = val.toObject();
     StandardSource src;
