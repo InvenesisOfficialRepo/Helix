@@ -1,0 +1,91 @@
+name: Build and Release Helix (macOS Apple Silicon)
+
+on:
+  push:
+    branches:
+      - main  # Triggered when commits are pushed or merged into main
+
+permissions:
+  contents: write  # Allows the runner to create releases and upload assets
+
+jobs:
+  build-and-release-macos:
+    runs-on: macos-14  # macos-14 uses Apple Silicon (M1/M2) runners by default
+
+    steps:
+      # 1. Clone the repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # 2. Setup Python (for aqtinstall)
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3. Install Homebrew Dependencies
+      # We need libpq for PostgreSQL database connection. QXlsx and Crypto (if QCryptographicHash) are built-in or compile from source.
+      - name: Install System Dependencies
+        run: |
+          brew install libpq
+          brew link --force libpq
+
+      # 4. Cache Qt
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.workspace }}/Qt
+          key: ${{ runner.os }}-qt-6.8.3-mac-graphs-multimedia-quick3d-qt5compat
+
+      # 5. Install Qt for macOS
+      - name: Install Qt
+        if: steps.cache-qt.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade aqtinstall
+          python -m aqt install-qt mac desktop 6.8.3 macos --outputdir ${{ runner.workspace }}/Qt --modules qtgraphs qtmultimedia qtquick3d qtshadertools qtquicktimeline qt5compat
+
+      # 6. Configure Qt Environment
+      - name: Configure Qt Environment
+        run: |
+          echo "QT_PATH=${{ runner.workspace }}/Qt/6.8.3/macos" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=${{ runner.workspace }}/Qt/6.8.3/macos" >> $GITHUB_ENV
+          echo "${{ runner.workspace }}/Qt/6.8.3/macos/bin" >> $GITHUB_PATH
+
+      # 7. Configure with CMake
+      - name: Configure CMake
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+      # 8. Build the Helix.app bundle
+      - name: Build Application
+        run: |
+          cmake --build build --config Release
+
+      # 9. Deploy Qt dependencies into the .app bundle and create a .dmg
+      - name: Run macdeployqt
+        run: |
+          # macdeployqt bundles the Qt libraries, QML modules, and SQL drivers (like libqsqlpsql.dylib)
+          # The -dmg flag automatically packages the .app into a distributable .dmg disk image.
+          macdeployqt build/Helix.app -qmldir=qml -always-overwrite -dmg
+
+      # 10. Extract the version from version.json
+      - name: Extract Version Info
+        id: get_version
+        run: |
+          # Parse version using jq
+          VERSION=$(jq -r '.latest_version' version.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # 11. Upload the DMG to the GitHub release
+      # This step attaches the macOS installer to the same release created by your Windows workflow
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          files: |
+            build/Helix.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
