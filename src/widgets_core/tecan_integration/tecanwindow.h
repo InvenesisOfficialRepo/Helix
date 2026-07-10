@@ -84,7 +84,7 @@ private:            /* ---------- helper GUI ----------
 
 private:            /* ---------- query helpers ---------- */
     void querySolutionsFromTestRequests();
-    void querySolutions(const QSet<QString> &compoundNames);
+    void querySolutions(const QList<QPair<QString, QString>> &compoundSolventPairs);
     int  resolveCompoundDuplicates(const QString &compoundName,
                                   const QList<QVariantMap> &duplicateSolutions);
     void populateCompoundTable(const QList<int> &solutionIds);

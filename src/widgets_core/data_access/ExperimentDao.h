@@ -13,7 +13,7 @@ public:
     ~ExperimentDao() = default;
 
     QList<QVariantMap> fetchTestRequests(const QStringList& requestIds, QString* errOut = nullptr) const;
-    QList<QVariantMap> fetchSolutionsForCompound(const QString& compoundName, QString* errOut = nullptr) const;
+    QList<QVariantMap> fetchSolutionsForCompound(const QString& compoundName, const QString& solvent = QString(), QString* errOut = nullptr) const;
     QList<QVariantMap> fetchSolutionsByIds(const QList<int>& solutionIds, QString* errOut = nullptr) const;
     
     bool saveExperiment(const QString& expCode, const QString& projectCode, const QJsonObject& data, const QStringList& requestIds, QString* errOut = nullptr) const;

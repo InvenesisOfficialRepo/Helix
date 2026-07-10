@@ -21,6 +21,8 @@ QVariant CompoundListModel::data(const QModelIndex &index, int role) const
     switch (role) {
     case TrackedCompoundIdRole: return it.trackedCompoundId;
     case CompoundNameRole:      return it.compoundName;
+    case SpeciesRole:           return it.species;
+    case SolventRole:           return it.solvent;
     case StatusRole:            return static_cast<int>(it.status);
     case StatusTextRole:        return statusToText(it.status);
     case SelectedRole:          return it.selected;
@@ -36,6 +38,8 @@ QHash<int, QByteArray> CompoundListModel::roleNames() const
     return {
         {TrackedCompoundIdRole, "trackedCompoundId"},
         {CompoundNameRole, "compoundName"},
+        {SpeciesRole, "species"},
+        {SolventRole, "solvent"},
         {StatusRole, "status"},
         {StatusTextRole, "statusText"},
         {SelectedRole, "selected"},
@@ -93,5 +97,49 @@ QStringList CompoundListModel::selectedIds() const
         if (it.selected && it.status == Status::Pending)
             out.push_back(it.trackedCompoundId);
     }
+    return out;
+}
+
+void CompoundListModel::selectAllBySpecies(const QString& species)
+{
+    for (int i = 0; i < items_.size(); ++i) {
+        if (items_[i].status == Status::Pending && items_[i].species == species && items_[i].hasSolution) {
+            items_[i].selected = true;
+        }
+    }
+    emit dataChanged(index(0, 0), index(items_.size() - 1, 0), {SelectedRole});
+}
+
+void CompoundListModel::selectAllBySolvent(const QString& solvent)
+{
+    for (int i = 0; i < items_.size(); ++i) {
+        if (items_[i].status == Status::Pending && items_[i].solvent == solvent && items_[i].hasSolution) {
+            items_[i].selected = true;
+        }
+    }
+    emit dataChanged(index(0, 0), index(items_.size() - 1, 0), {SelectedRole});
+}
+
+QStringList CompoundListModel::availableSpecies() const
+{
+    QStringList out;
+    for (const auto &it : items_) {
+        if (!it.species.isEmpty() && !out.contains(it.species)) {
+            out.push_back(it.species);
+        }
+    }
+    out.sort();
+    return out;
+}
+
+QStringList CompoundListModel::availableSolvents() const
+{
+    QStringList out;
+    for (const auto &it : items_) {
+        if (!it.solvent.isEmpty() && !out.contains(it.solvent)) {
+            out.push_back(it.solvent);
+        }
+    }
+    out.sort();
     return out;
 }

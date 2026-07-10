@@ -175,36 +175,56 @@ void TecanWindow::loadTestRequests(const QStringList &requestIDs) {
 }
 
 void TecanWindow::querySolutionsFromTestRequests() {
-  QSet<QString> compoundNames;
+  QList<QPair<QString, QString>> compoundSolventPairs;
+  QSet<QPair<QString, QString>> seenPairs;
   int compoundCol = -1;
+  int solventCol = -1;
+  
   for (int c = 0; c < testRequestModel->columnCount(); ++c) {
       if (testRequestModel->headerData(c, Qt::Horizontal).toString() == "compound_name") {
           compoundCol = c;
-          break;
+      }
+      if (testRequestModel->headerData(c, Qt::Horizontal).toString() == "solvent") {
+          solventCol = c;
       }
   }
+  
   if (compoundCol != -1) {
-      for (int row = 0, rows = testRequestModel->rowCount(); row < rows; ++row)
-        compoundNames.insert(testRequestModel->index(row, compoundCol).data().toString());
+      for (int row = 0, rows = testRequestModel->rowCount(); row < rows; ++row) {
+          QString cmp = testRequestModel->index(row, compoundCol).data().toString();
+          QString sol;
+          if (solventCol != -1) {
+              sol = testRequestModel->index(row, solventCol).data().toString();
+          }
+          auto p = qMakePair(cmp, sol);
+          if (!seenPairs.contains(p)) {
+              seenPairs.insert(p);
+              compoundSolventPairs.append(p);
+          }
+      }
   }
-  querySolutions(compoundNames);
+  querySolutions(compoundSolventPairs);
 }
 
-void TecanWindow::querySolutions(const QSet<QString> &compoundNames) {
+void TecanWindow::querySolutions(const QList<QPair<QString, QString>> &compoundSolventPairs) {
   QList<int> selectedSolutionIds;
   QString err;
-  QList<QVariantMap> solutionsFound = m_viewModel->getExperimentManager()->fetchSolutionsForCompounds(compoundNames, &err);
+  QList<QVariantMap> solutionsFound = m_viewModel->getExperimentManager()->fetchSolutionsForCompounds(compoundSolventPairs, &err);
   if (!err.isEmpty()) {
       showError(this, tr("Query Error"), err);
   }
 
-  QMap<QString, QList<QVariantMap>> solByCmp;
+  QMap<QPair<QString, QString>, QList<QVariantMap>> solByCmpSolvent;
   for (const auto& sol : solutionsFound) {
-      solByCmp[sol["product_name"].toString().toLower()].append(sol);
+      QString cmp = sol["product_name"].toString().toLower();
+      QString slv = sol["solvent"].toString().toLower();
+      solByCmpSolvent[qMakePair(cmp, slv)].append(sol);
   }
 
-  for (const QString &compound : compoundNames) {
-      QList<QVariantMap> sols = solByCmp[compound.toLower()];
+  for (const auto &pair : compoundSolventPairs) {
+      const QString &compound = pair.first;
+      const QString &solvent = pair.second;
+      QList<QVariantMap> sols = solByCmpSolvent[qMakePair(compound.toLower(), solvent.toLower())];
       if (sols.size() == 1) {
           selectedSolutionIds << sols.first()["solution_id"].toInt();
       } else if (sols.size() > 1) {

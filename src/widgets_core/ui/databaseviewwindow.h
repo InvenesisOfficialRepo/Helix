@@ -44,6 +44,7 @@ private:
     TecanWindow* tecanView = nullptr;
     QAction* actionRegisterCompound = nullptr;
     QAction* actionCreateSolutionFromBottle = nullptr;
+    QAction* actionImportData = nullptr;
 
     void updateFilters(); // ✅ Helper function for dual filtering
 
@@ -63,6 +64,7 @@ private slots:
     void on_actionAdminResetPassword_triggered();
     void onRegisterCompoundTriggered();
     void onCreateSolutionFromBottleTriggered();
+    void onImportDataTriggered();
 };
 
 #endif // DATABASEVIEWWINDOW_H

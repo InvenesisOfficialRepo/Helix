@@ -31,6 +31,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include "ThemeManager.h"
+#include "../import_module/SmartImportDialog.h"
 
 
 MainWindow::MainWindow(const QString &preAuthRole, QWidget *parent)
@@ -83,6 +84,11 @@ MainWindow::MainWindow(const QString &preAuthRole, QWidget *parent)
     ui->toolBar->addAction(actionCreateSolutionFromBottle);
     connect(actionCreateSolutionFromBottle, &QAction::triggered, this, &MainWindow::onCreateSolutionFromBottleTriggered);
 
+    // Create the "Import Inventory Data" action
+    actionImportData = new QAction(QIcon(":/icons/resources/icons/table.png"), "Import Inventory Data (Excel/CSV)", this);
+    ui->toolBar->addAction(actionImportData);
+    connect(actionImportData, &QAction::triggered, this, &MainWindow::onImportDataTriggered);
+
     // -------------------------------------------------------------
     // Set up Main Window Menu Bar Programmatically
     // -------------------------------------------------------------
@@ -99,6 +105,7 @@ MainWindow::MainWindow(const QString &preAuthRole, QWidget *parent)
     actionsMenu->addAction(ui->actionUpdate);
     actionsMenu->addAction(actionRegisterCompound);
     actionsMenu->addAction(actionCreateSolutionFromBottle);
+    actionsMenu->addAction(actionImportData);
     actionsMenu->addAction(ui->actionAdminResetPassword);
 
     // 2. Create Settings -> Theme Menu
@@ -706,6 +713,13 @@ void MainWindow::onCreateSolutionFromBottleTriggered()
     bottleData["project_code"] = projectCodeIndex.isValid() ? projectCodeIndex.data().toString() : "";
 
     DissolveBottleDialog dlg(bottleData, this);
+    if (dlg.exec() == QDialog::Accepted) {
+        refreshTableView();
+    }
+}
+
+void MainWindow::onImportDataTriggered() {
+    import_module::SmartImportDialog dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
         refreshTableView();
     }

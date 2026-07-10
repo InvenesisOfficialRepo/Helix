@@ -13,13 +13,51 @@ RowLayout {
     property string role: ""
     property int compoundsCount: 0
     property int estimatedPlates: 0
+    property var availableSpecies: []
+    property var availableSolvents: []
 
     signal selectAllPendingClicked()
+    signal selectAllBySpeciesClicked(string species)
+    signal selectAllBySolventClicked(string solvent)
     signal sendSelectedClicked()
 
     Button {
         text: "Select All Pending"
         onClicked: root.selectAllPendingClicked()
+    }
+
+    ComboBox {
+        id: speciesCombo
+        visible: root.availableSpecies.length > 0
+        model: root.availableSpecies
+        textRole: ""
+    }
+
+    Button {
+        text: "Select by Species"
+        visible: root.availableSpecies.length > 0
+        onClicked: {
+            if (speciesCombo.currentText !== "") {
+                root.selectAllBySpeciesClicked(speciesCombo.currentText)
+            }
+        }
+    }
+
+    ComboBox {
+        id: solventCombo
+        visible: root.availableSolvents.length > 0
+        model: root.availableSolvents
+        textRole: ""
+    }
+
+    Button {
+        text: "Select by Solvent"
+        visible: root.availableSolvents.length > 0
+        onClicked: {
+            if (solventCombo.currentText !== "") {
+                root.selectAllBySolventClicked(solventCombo.currentText)
+            }
+        }
     }
 
     Button {

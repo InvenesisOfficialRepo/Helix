@@ -188,6 +188,14 @@ set(APP_SOURCES
     src/widgets_core/tecan_integration/standardselectiondialog.h
     src/widgets_core/tecan_integration/standardselectiondialog.ui
 
+    src/widgets_core/import_module/ImportSchema.h
+    src/widgets_core/import_module/SmartImporter.h
+    src/widgets_core/import_module/SmartImporter.cpp
+    src/widgets_core/import_module/ImportDataAccess.h
+    src/widgets_core/import_module/ImportDataAccess.cpp
+    src/widgets_core/import_module/SmartImportDialog.h
+    src/widgets_core/import_module/SmartImportDialog.cpp
+
     src/widgets_core/ui/databaseviewwindow.cpp
     src/widgets_core/ui/databaseviewwindow.h
     src/widgets_core/ui/databaseviewwindow.ui

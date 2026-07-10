@@ -179,6 +179,8 @@ void ProjectViewModel::onBatchDetailReady(const BatchDetailDto& dto)
         it.hasSolution = c.hasSolution;
         it.numberOfDilutions = c.numberOfDilutions;
         it.numberOfReplicates = c.numberOfReplicates;
+        it.species = c.species;
+        it.solvent = c.solvent;
         items.push_back(std::move(it));
     }
     compounds_->setItems(std::move(items));

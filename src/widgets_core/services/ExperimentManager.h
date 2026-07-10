@@ -20,9 +20,8 @@ public:
     explicit ExperimentManager(QObject* parent = nullptr);
     ~ExperimentManager() = default;
 
-    // Database access exposed through Manager
     QList<QVariantMap> fetchTestRequests(const QStringList& requestIds, QString* errOut = nullptr) const;
-    QList<QVariantMap> fetchSolutionsForCompounds(const QSet<QString>& compoundNames, QString* errOut = nullptr) const;
+    QList<QVariantMap> fetchSolutionsForCompounds(const QList<QPair<QString, QString>>& compoundSolventPairs, QString* errOut = nullptr) const;
     QList<QVariantMap> fetchSolutionsByIds(const QList<int>& solutionIds, QString* errOut = nullptr) const;
     bool markTestRequestsDone(const QStringList& requestIds, QString* errOut = nullptr) const;
 

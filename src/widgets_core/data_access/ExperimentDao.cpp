@@ -32,15 +32,25 @@ QList<QVariantMap> ExperimentDao::fetchTestRequests(const QStringList& requestId
     return results;
 }
 
-QList<QVariantMap> ExperimentDao::fetchSolutionsForCompound(const QString& compoundName, QString* errOut) const {
+QList<QVariantMap> ExperimentDao::fetchSolutionsForCompound(const QString& compoundName, const QString& solvent, QString* errOut) const {
     QList<QVariantMap> results;
     QSqlQuery query;
-    query.prepare(R"(
+    
+    QString sql = R"(
             SELECT solution_id, product_name, invenesis_solution_id, quantity, quantity_unit,
-                   concentration, concentration_unit, container_id, well_id, matrix_tube_id
+                   concentration, concentration_unit, container_id, well_id, matrix_tube_id, solvent
             FROM   solutions
-            WHERE  LOWER(product_name) = LOWER(:compound))");
+            WHERE  LOWER(product_name) = LOWER(:compound))";
+            
+    if (!solvent.trimmed().isEmpty()) {
+        sql += " AND LOWER(solvent) = LOWER(:solvent)";
+    }
+
+    query.prepare(sql);
     query.bindValue(":compound", compoundName);
+    if (!solvent.trimmed().isEmpty()) {
+        query.bindValue(":solvent", solvent);
+    }
 
     if (!query.exec()) {
         if (errOut) *errOut = query.lastError().text();

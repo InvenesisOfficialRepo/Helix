@@ -9,6 +9,8 @@
 struct CompoundItem {
     QString trackedCompoundId;  // uuid string
     QString compoundName;
+    QString species;
+    QString solvent;
     Status status = Status::Pending;
     bool selected = false;
     bool hasSolution = false;
@@ -19,10 +21,15 @@ struct CompoundItem {
 class CompoundListModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(QStringList availableSpecies READ availableSpecies NOTIFY compoundsChanged)
+    Q_PROPERTY(QStringList availableSolvents READ availableSolvents NOTIFY compoundsChanged)
+
 public:
     enum Roles {
         TrackedCompoundIdRole = Qt::UserRole + 1,
         CompoundNameRole,
+        SpeciesRole,
+        SolventRole,
         StatusRole,
         StatusTextRole,
         SelectedRole,
@@ -39,10 +46,17 @@ public:
 
     Q_INVOKABLE void setSelected(int row, bool selected);
     Q_INVOKABLE void selectAllPending();
+    Q_INVOKABLE void selectAllBySpecies(const QString& species);
+    Q_INVOKABLE void selectAllBySolvent(const QString& solvent);
     Q_INVOKABLE QStringList selectedIds() const;
+    QStringList availableSpecies() const;
+    QStringList availableSolvents() const;
 
     void setItems(QVector<CompoundItem> items);
     void clearSelection();
+
+signals:
+    void compoundsChanged();
 
 private:
     QVector<CompoundItem> items_;

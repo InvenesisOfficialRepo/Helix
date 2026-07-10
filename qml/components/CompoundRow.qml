@@ -9,6 +9,8 @@ import "../components"
 Item {
     id: root
     property string name: ""
+    property string species: ""
+    property string solvent: ""
     property string statusText: ""
     property bool selectable: true
     property bool checked: false
@@ -64,7 +66,7 @@ Item {
                     enabled: root.selectable
                     opacity: root.selectable ? 1.0 : 0.4
                     checked: root.checked
-                    onToggled: root.toggled(checked)
+                    onToggled: function(checked) { root.toggled(checked) }
                     Layout.alignment: Qt.AlignVCenter
 
                     // prevent row MouseArea from also toggling when clicking checkbox
@@ -80,7 +82,12 @@ Item {
                     spacing: 2
 
                     Label {
-                        text: root.name
+                        text: {
+                            let t = root.name;
+                            if (root.species) t += " (" + root.species + ")";
+                            if (root.solvent) t += " [" + root.solvent + "]";
+                            return t;
+                        }
                         color: Style.text
                         opacity: root.selectable ? 1.0 : 0.4
                         font.family: Style.fontSecondaryBold

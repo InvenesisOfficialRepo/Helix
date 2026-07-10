@@ -19,6 +19,7 @@ struct ExcelRow {
     QString projectCode;    // "Project N°" -> projects.project_code
     QString compoundName;   // "Sample ID"  -> tracked_test_compounds.compound_name
     QString testCode;       // "Invenesis Assay ID" -> tracked_test_batches.test_code
+    QString species;        // "Species" -> tracked_test_compounds.species
 
     double startingDose_uM = 0.0; // "Starting Dose (µM)" -> starting_concentration
     double dilutionFold = 0.0;    // "Dilution Fold" -> dilution_steps (int) if integral, else store in notes
@@ -81,6 +82,7 @@ static bool parseXlsx(const QString& xlsxPath, QVector<ExcelRow>* rowsOut, QStri
     if (!require("Project N°")) return false;
     if (!require("Sample ID")) return false;
     if (!require("Invenesis Assay ID")) return false;
+    if (!require("Species")) return false;
     if (!require("Starting Dose (µM)")) return false;
     if (!require("Dilution Fold")) return false;
     if (!require("Nb Replicates")) return false;
@@ -104,8 +106,9 @@ static bool parseXlsx(const QString& xlsxPath, QVector<ExcelRow>* rowsOut, QStri
         row.projectCode  = readStr(r, "Project N°");
         row.compoundName = readStr(r, "Sample ID");
         row.testCode     = readStr(r, "Invenesis Assay ID");
+        row.species      = readStr(r, "Species");
 
-        if (row.projectCode.isEmpty() && row.compoundName.isEmpty() && row.testCode.isEmpty())
+        if (row.projectCode.isEmpty() && row.compoundName.isEmpty() && row.testCode.isEmpty() && row.species.isEmpty())
             continue;
 
         row.startingDose_uM = readDouble(r, "Starting Dose (µM)");
@@ -208,7 +211,8 @@ bool ExcelImportRepository::importFile(const QString& xlsxPath,
             dilution_steps,
             number_of_dilutions,
             number_of_replicate,
-            additional_notes
+            additional_notes,
+            species
         )
         VALUES (
             :batch_id,
@@ -219,7 +223,8 @@ bool ExcelImportRepository::importFile(const QString& xlsxPath,
             :dilution_steps,
             :number_of_dilutions,
             :number_of_replicate,
-            :additional_notes
+            :additional_notes,
+            :species
         )
     )");
 
@@ -273,6 +278,7 @@ bool ExcelImportRepository::importFile(const QString& xlsxPath,
             insertComp.bindValue(":number_of_dilutions", r.nbDilutions);
             insertComp.bindValue(":number_of_replicate", r.nbReplicates);
             insertComp.bindValue(":additional_notes", notes);
+            insertComp.bindValue(":species", r.species);
 
             if (!insertComp.exec())
                 return rollback("Insert compound failed: " + insertComp.lastError().text());

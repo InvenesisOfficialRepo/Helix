@@ -46,8 +46,12 @@ Page {
             role: App.session.role
             compoundsCount: compounds.count
             estimatedPlates: App.project.estimatedTestPlates
+            availableSpecies: App.project.compoundsModel.availableSpecies
+            availableSolvents: App.project.compoundsModel.availableSolvents
 
             onSelectAllPendingClicked: App.project.selectAllPending()
+            onSelectAllBySpeciesClicked: function(species) { App.project.compoundsModel.selectAllBySpecies(species) }
+            onSelectAllBySolventClicked: function(solvent) { App.project.compoundsModel.selectAllBySolvent(solvent) }
 
             onSendSelectedClicked: {
                 if (App.project.scheduledFor && App.project.scheduledFor.isValid && App.project.scheduledFor.isValid()) {
@@ -79,10 +83,12 @@ Page {
             delegate: CompoundRow {
                 width: compounds.width - compounds.leftMargin - compounds.rightMargin
                 name: model.compoundName
+                species: model.species
+                solvent: model.solvent
                 statusText: model.statusText
                 selectable: model.selectable
                 checked: model.selected
-                onToggled: (checked) => App.project.compoundsModel.setSelected(index, checked)
+                onToggled: function(checked) { App.project.compoundsModel.setSelected(index, checked) }
             }
 
             footer: Item { height: 8 }

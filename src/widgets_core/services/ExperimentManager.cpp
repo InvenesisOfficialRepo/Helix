@@ -18,10 +18,10 @@ QList<QVariantMap> ExperimentManager::fetchTestRequests(const QStringList& reque
     return m_dao->fetchTestRequests(requestIds, errOut);
 }
 
-QList<QVariantMap> ExperimentManager::fetchSolutionsForCompounds(const QSet<QString>& compoundNames, QString* errOut) const {
+QList<QVariantMap> ExperimentManager::fetchSolutionsForCompounds(const QList<QPair<QString, QString>>& compoundSolventPairs, QString* errOut) const {
     QList<QVariantMap> results;
-    for (const QString& compound : compoundNames) {
-        results.append(m_dao->fetchSolutionsForCompound(compound, errOut));
+    for (const auto& pair : compoundSolventPairs) {
+        results.append(m_dao->fetchSolutionsForCompound(pair.first, pair.second, errOut));
     }
     return results;
 }
@@ -324,7 +324,7 @@ QStandardItemModel* ExperimentManager::createTestRequestModel(const QList<QVaria
                                  "starting_concentration", "starting_concentration_unit", "dilution_steps", 
                                  "number_of_dilutions", "number_of_replicate", 
                                  "stock_concentration", "stock_concentration_unit", 
-                                 "additional_notes"};
+                                 "additional_notes", "species", "solvent"};
     model->setHorizontalHeaderLabels(headers);
     for (const QVariantMap &obj : data) {
         QList<QStandardItem *> row;
@@ -359,7 +359,7 @@ QStandardItemModel* ExperimentManager::createTestRequestModelFromJson(const QJso
                                  "starting_concentration", "starting_concentration_unit", "dilution_steps", 
                                  "number_of_dilutions", "number_of_replicate", 
                                  "stock_concentration", "stock_concentration_unit", 
-                                 "additional_notes"};
+                                 "additional_notes", "species", "solvent"};
     model->setHorizontalHeaderLabels(headers);
     for (const QJsonValue &val : array) {
         const QJsonObject obj = val.toObject();

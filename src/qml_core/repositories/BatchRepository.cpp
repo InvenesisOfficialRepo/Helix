@@ -85,9 +85,12 @@ BatchDetailDto BatchRepository::loadBatchDetail(const QString& batchId, QString*
                 SELECT 1 
                 FROM public.solutions s 
                 WHERE LOWER(s.product_name) = LOWER(c.compound_name)
+                  AND (c.solvent IS NULL OR TRIM(c.solvent) = '' OR LOWER(s.solvent) = LOWER(c.solvent))
               ) AS has_solution,
               c.number_of_dilutions,
-              c.number_of_replicate
+              c.number_of_replicate,
+              c.species,
+              c.solvent
             FROM public.tracked_test_compounds c
             WHERE c.batch_id = :batch
             ORDER BY c.created_at ASC
@@ -112,6 +115,8 @@ BatchDetailDto BatchRepository::loadBatchDetail(const QString& batchId, QString*
             if (c.numberOfDilutions <= 0) c.numberOfDilutions = 3;
             c.numberOfReplicates = q.value(7).toInt();
             if (c.numberOfReplicates <= 0) c.numberOfReplicates = 3;
+            c.species = q.value(8).toString();
+            c.solvent = q.value(9).toString();
             compounds.push_back(std::move(c));
         }
         out.compounds = std::move(compounds);
@@ -183,7 +188,9 @@ bool BatchRepository::sendSelectedCompounds(const QString& batchId,
             done,
             test_code,
             tracked_compound_id,
-            scheduled_for
+            scheduled_for,
+            species,
+            solvent
         )
         SELECT
             :request_id,
@@ -201,7 +208,9 @@ bool BatchRepository::sendSelectedCompounds(const QString& batchId,
             false,
             b.test_code,
             c.tracked_compound_id,
-            :date
+            :date,
+            c.species,
+            c.solvent
         FROM public.tracked_test_batches b
         JOIN public.tracked_test_compounds c ON c.batch_id = b.batch_id
         WHERE b.batch_id = :batch

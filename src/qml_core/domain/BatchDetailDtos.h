@@ -12,6 +12,8 @@
 struct CompoundDto {
     QString trackedCompoundId;     // uuid string
     QString compoundName;
+    QString species;
+    QString solvent;
     Status status = Status::Pending;
     QDate scheduledFor;            // can be invalid
     QString robotRequestId;        // can be empty
