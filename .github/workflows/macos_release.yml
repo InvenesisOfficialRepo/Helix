@@ -64,12 +64,18 @@ jobs:
         run: |
           cmake --build build --config Release
 
-      # 9. Deploy Qt dependencies into the .app bundle and create a .dmg
-      - name: Run macdeployqt
+      # 9. Deploy Qt dependencies and fix code signature
+      - name: Deploy and Sign
         run: |
-          # macdeployqt bundles the Qt libraries, QML modules, and SQL drivers (like libqsqlpsql.dylib)
-          # The -dmg flag automatically packages the .app into a distributable .dmg disk image.
-          macdeployqt build/Helix.app -qmldir=qml -always-overwrite -dmg
+          # macdeployqt bundles the Qt libraries, QML modules, and SQL drivers
+          macdeployqt build/Helix.app -qmldir=qml -always-overwrite
+          
+          # macdeployqt breaks the original ad-hoc signature by adding libraries. 
+          # We must re-sign the entire bundle ad-hoc to prevent the macOS "damaged" error.
+          codesign --force --deep --sign - build/Helix.app
+          
+          # Create the DMG manually after signing
+          hdiutil create -volname "Helix" -srcfolder build/Helix.app -ov -format UDZO build/Helix.dmg
 
       # 10. Extract the version from version.json
       - name: Extract Version Info
