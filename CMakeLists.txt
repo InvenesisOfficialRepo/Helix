@@ -323,5 +323,8 @@ target_link_libraries(Helix PRIVATE
 # Compile flags
 target_compile_definitions(Helix PRIVATE USE_QXLSX=1)
 
-# Compile as pure Windows GUI application (no console popup window)
-set_target_properties(Helix PROPERTIES WIN32_EXECUTABLE TRUE)
+# Compile as pure Windows GUI application (no console popup window) and Mac OS X App Bundle
+set_target_properties(Helix PROPERTIES 
+    WIN32_EXECUTABLE TRUE 
+    MACOSX_BUNDLE TRUE
+)
