@@ -1,13 +1,46 @@
 #include "DbConfig.h"
 #include <QProcessEnvironment>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QTextStream>
+#include <QMap>
 
 bool loadDbConfigFromEnv(DbConfig &cfg, QString &error)
 {
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    QMap<QString, QString> fallbackEnv;
+
+    // Helper to parse a .env file
+    auto loadDotEnv = [&](const QString &path) {
+        QFile file(path);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            while (!in.atEnd()) {
+                QString line = in.readLine().trimmed();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+                int idx = line.indexOf('=');
+                if (idx > 0) {
+                    QString key = line.left(idx).trimmed();
+                    QString val = line.mid(idx + 1).trimmed();
+                    fallbackEnv[key] = val;
+                }
+            }
+        }
+    };
+
+    // Try loading from app directory and home directory
+    loadDotEnv(QCoreApplication::applicationDirPath() + "/.env");
+    loadDotEnv(QDir::homePath() + "/.helix.env");
+
     error.clear();
 
     auto getRequired = [&](const QString &key) -> QString {
         QString value = env.value(key);
+        if (value.isEmpty()) {
+            value = fallbackEnv.value(key);
+        }
+        
         if (value.isEmpty()) {
             if (!error.isEmpty())
                 error += '\n';
@@ -24,6 +57,10 @@ bool loadDbConfigFromEnv(DbConfig &cfg, QString &error)
 
     // Port: optional, default 5432 if not set
     QString portStr = env.value("INV_DB_PORT");
+    if (portStr.isEmpty()) {
+        portStr = fallbackEnv.value("INV_DB_PORT");
+    }
+    
     if (portStr.isEmpty()) {
         cfg.port = 5432;  // default PostgreSQL port
     } else {
