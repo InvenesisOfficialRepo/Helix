@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.2.0",
-  "release_notes": "<h3>Helix 1.2.0</h3><ul><li>Migrated resource JSON files (catalogue, plates, matrices, vocabularies) directly into the PostgreSQL database using ReferenceDataRepository for centralized reference data management.</li><li>Added a new Smart Importer module that supports automated fuzzy matching and bulk CSV/XLSX imports for Compounds and Solutions.</li><li>Fixed duplicate matching bugs in the Tecan experiment workflows by enforcing strict compound-solvent pair validation.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.0/Helix_Setup.exe",
-  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.0/Helix.dmg"
+  "latest_version": "1.2.1",
+  "release_notes": "<h3>Helix 1.2.1</h3><ul><li>Migrated resource JSON files (catalogue, plates, matrices, vocabularies) directly into the PostgreSQL database using ReferenceDataRepository for centralized reference data management.</li><li>Added a new Smart Importer module that supports automated fuzzy matching and bulk CSV/XLSX imports for Compounds and Solutions.</li><li>Fixed duplicate matching bugs in the Tecan experiment workflows by enforcing strict compound-solvent pair validation.</li><li>Added macOS Apple Silicon (M1/M2) auto-update and build deployment support (.dmg).</li><li>Implemented local .env file fallback for database configuration (.helix.env).</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.1/Helix_Setup.exe",
+  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.1/Helix.dmg"
 }
