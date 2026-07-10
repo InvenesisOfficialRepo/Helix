@@ -67,8 +67,15 @@ jobs:
       # 9. Deploy Qt dependencies and fix code signature
       - name: Deploy and Sign
         run: |
+          # Install dylibbundler to package Homebrew dependencies like libpq
+          brew install dylibbundler
+          
           # macdeployqt bundles the Qt libraries, QML modules, and SQL drivers
           macdeployqt build/Helix.app -qmldir=qml -always-overwrite
+          
+          # Bundle libpq and its dependencies (libssl, libcrypto) into the .app so the SQL driver works
+          dylibbundler -od -b -x build/Helix.app/Contents/MacOS/Helix -d build/Helix.app/Contents/Frameworks/ -p @executable_path/../Frameworks/
+          dylibbundler -od -b -x build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib -d build/Helix.app/Contents/Frameworks/ -p @executable_path/../Frameworks/
           
           # macdeployqt breaks the original ad-hoc signature by adding libraries. 
           # We must re-sign the entire bundle ad-hoc to prevent the macOS "damaged" error.
