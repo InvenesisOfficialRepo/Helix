@@ -1,5 +1,5 @@
 {
-  "latest_version": "1.1.18",
-  "release_notes": "<h3>Helix Launcher 1.1.18</h3><ul><li>Added per-daughter SeedVolumes.csv files to the individual dght_ folders during GWL export, alongside the global SeedVolumes.csv file. QC compounds will now correctly map directly to their respective <b>qc_plates.json</b> concentration values, applying a precise transfer ratio calculation for the test plate starting concentration, and automatically enforcing the strict 3.16 dilution factor exactly as requested.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.1.18/Helix_Setup.exe"
+  "latest_version": "1.2.0",
+  "release_notes": "<h3>Helix 1.2.0</h3><ul><li>Migrated resource JSON files (catalogue, plates, matrices, vocabularies) directly into the PostgreSQL database using ReferenceDataRepository for centralized reference data management.</li><li>Added a new Smart Importer module that supports automated fuzzy matching and bulk CSV/XLSX imports for Compounds and Solutions.</li><li>Fixed duplicate matching bugs in the Tecan experiment workflows by enforcing strict compound-solvent pair validation.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.0/Helix_Setup.exe"
 }
