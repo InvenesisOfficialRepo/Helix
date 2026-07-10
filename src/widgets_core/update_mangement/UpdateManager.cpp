@@ -57,7 +57,11 @@ void UpdateManager::checkForUpdates()
         QJsonObject obj = doc.object();
         m_latestVersion = obj.value("latest_version").toString();
         m_releaseNotes = obj.value("release_notes").toString();
+#if defined(Q_OS_MAC)
+        m_downloadUrl = QUrl(obj.value("download_url_mac").toString());
+#else
         m_downloadUrl = QUrl(obj.value("download_url").toString());
+#endif
 
         QVersionNumber current = QVersionNumber::fromString(QCoreApplication::applicationVersion());
         QVersionNumber remote = QVersionNumber::fromString(m_latestVersion);
@@ -81,7 +85,11 @@ void UpdateManager::startDownload()
 
     // Setup temporary storage for downloaded installer
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+#if defined(Q_OS_MAC)
+    m_tempFilePath = tempDir + "/Helix.dmg";
+#else
     m_tempFilePath = tempDir + "/Helix_Setup.exe";
+#endif
     
     // Remove old download if exists
     if (QFile::exists(m_tempFilePath)) {
@@ -135,7 +143,11 @@ void UpdateManager::installAndExit()
     qInfo() << "Helix Launcher: Starting installer detached:" << m_tempFilePath;
 
     // Launch installer detached from Helix process
+#if defined(Q_OS_MAC)
+    bool success = QProcess::startDetached("open", QStringList() << m_tempFilePath);
+#else
     bool success = QProcess::startDetached(m_tempFilePath, QStringList());
+#endif
     if (success) {
         QCoreApplication::quit();
     } else {
