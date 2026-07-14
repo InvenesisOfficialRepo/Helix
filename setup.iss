@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=Helix
-AppVersion=1.2.1
+AppVersion=1.2.2
 AppPublisher=Invenesis
 AppPublisherURL=https://invenesis.com
 DefaultDirName={autopf}\Helix

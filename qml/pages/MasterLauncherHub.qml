@@ -133,9 +133,21 @@ Page {
         Item { height: Style.pad } // spacing gap
 
         // Premium Cards Layout
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: Style.padXl
+        Flickable {
+            id: cardCarousel
+            Layout.fillWidth: true
+            Layout.preferredHeight: 380
+            contentWidth: cardRow.implicitWidth + 40
+            contentHeight: 380
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
+
+
+            RowLayout {
+                id: cardRow
+                y: (parent.height - implicitHeight) / 2
+                x: 20
+                spacing: Style.padXl
 
             // Card 1: Screening Database Manager (Widgets App)
             Frame {
@@ -471,8 +483,139 @@ Page {
                     onClicked: win.launchStandaloneAnalysis()
                 }
             }
+
+            // Card 4: Datapoint & Monoplicate Manager
+            Frame {
+                id: cardDatapoint
+                Layout.preferredWidth: 380
+                Layout.preferredHeight: 320
+                padding: Style.padLg
+                
+                scale: mouseDatapoint.containsMouse ? 1.03 : 1.0
+                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+                background: Rectangle {
+                    radius: Style.radiusLg
+                    color: Style.panel
+                    border.color: mouseDatapoint.containsMouse ? Style.teal : Style.border
+                    border.width: mouseDatapoint.containsMouse ? 2 : Style.borderWidth
+
+                    // Glassmorphism subtle glow
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: "transparent"
+                        border.color: Qt.rgba(Style.teal.r, Style.teal.g, Style.teal.b, 0.2)
+                        border.width: 1
+                        visible: mouseDatapoint.containsMouse
+                    }
+                }
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: Style.pad
+
+                    // Card header
+                    RowLayout {
+                        spacing: Style.pad
+                        
+                        Label {
+                            text: "" // Database/Money icon (approximate)
+                            font.family: Style.iconFontFamily
+                            font.pixelSize: Style.fontXxl + 6
+                            color: Style.teal
+                        }
+
+                        ColumnLayout {
+                            spacing: 2
+                            Label {
+                                text: "Datapoint Manager"
+                                font.family: Style.fontPrimaryBold
+                                font.pixelSize: Style.fontLg
+                                color: Style.text
+                            }
+                            Label {
+                                text: "Contract & Pricing grids"
+                                font.family: Style.fontSecondary
+                                font.pixelSize: Style.fontXs
+                                color: Style.subText
+                            }
+                        }
+                    }
+
+                    // Card Body
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        text: "Manage annualized client contracts, track monoplicate consumption, configure custom pricing overrides, and monitor overall datapoint pools for all your testing partners."
+                        wrapMode: Text.Wrap
+                        color: Style.subText
+                        font.family: Style.fontSecondary
+                        font.pixelSize: Style.fontSm + 1
+                        lineHeight: 1.25
+                    }
+
+                    // Tech Tags
+                    RowLayout {
+                        spacing: Style.padXs
+                        Layout.fillWidth: true
+
+                        Repeater {
+                            model: ["Contracts", "Pricing", "Monoplicates"]
+                            Rectangle {
+                                color: Qt.rgba(Style.accent2.r, Style.accent2.g, Style.accent2.b, 0.15)
+                                border.color: Style.border
+                                radius: 4
+                                implicitWidth: tagText4.implicitWidth + 12
+                                implicitHeight: tagText4.implicitHeight + 6
+
+                                Label {
+                                    id: tagText4
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    font.family: Style.fontSecondary
+                                    font.pixelSize: Style.fontXs - 1
+                                    color: Style.text
+                                }
+                            }
+                        }
+                    }
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: "Launch Datapoint Manager"
+                        onClicked: win.launchDatapointManager()
+                    }
+                }
+
+                MouseArea {
+                    id: mouseDatapoint
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: win.launchDatapointManager()
+                }
+            }
         }
 
+        }
+
+        PageIndicator {
+            id: pageIndicator
+            Layout.alignment: Qt.AlignHCenter
+            count: 4
+            currentIndex: Math.max(0, Math.min(count - 1, Math.round(cardCarousel.contentX / (cardRow.implicitWidth / count))))
+            
+            delegate: Rectangle {
+                implicitWidth: 8
+                implicitHeight: 8
+                radius: width / 2
+                color: index === pageIndicator.currentIndex ? Style.teal : Style.subText
+                opacity: index === pageIndicator.currentIndex ? 1.0 : 0.4
+                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+            }
+        }
+        
         Item { Layout.fillHeight: true } // bottom spacer
     }
 

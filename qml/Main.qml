@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtCore
 import TestRequests 1.0
 import QtQuick.Controls.Material
+import Qt.labs.platform 1.1
 
 ApplicationWindow {
     id: win
@@ -11,6 +12,43 @@ ApplicationWindow {
     height: 650
     visible: true
     title: "Invenesis Master Hub"
+
+    onClosing: (close) => {
+        if (trayIcon.available) {
+            close.accepted = false
+            win.hide()
+        }
+    }
+
+    SystemTrayIcon {
+        id: trayIcon
+        visible: true
+        icon.source: "qrc:/icons/resources/icons/Sphere.png"
+        tooltip: "Invenesis Master Hub"
+        
+        menu: Menu {
+            MenuItem {
+                text: "Open Master Hub"
+                onTriggered: {
+                    win.show()
+                    win.raise()
+                    win.requestActivate()
+                }
+            }
+            MenuItem {
+                text: "Quit"
+                onTriggered: Qt.quit()
+            }
+        }
+        
+        onActivated: (reason) => {
+            if (reason === SystemTrayIcon.Trigger || reason === SystemTrayIcon.DoubleClick) {
+                win.show()
+                win.raise()
+                win.requestActivate()
+            }
+        }
+    }
 
     Material.theme: Style.isDark ? Material.Dark : Material.Light
     Material.accent: Style.accent
@@ -25,6 +63,7 @@ ApplicationWindow {
     property alias appStack: stack
     property var dashboardWindowInstance: null
     property var standaloneWindowInstance: null
+    property var datapointManagerWindowInstance: null
 
     function launchDashboardWindow() {
         if (dashboardWindowInstance === null) {
@@ -48,6 +87,18 @@ ApplicationWindow {
         standaloneWindowInstance.show()
         standaloneWindowInstance.raise()
         standaloneWindowInstance.requestActivate()
+    }
+
+    function launchDatapointManager() {
+        if (datapointManagerWindowInstance === null) {
+            datapointManagerWindowInstance = datapointManagerWindowComponent.createObject(null)
+            datapointManagerWindowInstance.closing.connect(function() {
+                datapointManagerWindowInstance = null
+            })
+        }
+        datapointManagerWindowInstance.show()
+        datapointManagerWindowInstance.raise()
+        datapointManagerWindowInstance.requestActivate()
     }
 
     StackView {
@@ -118,6 +169,31 @@ ApplicationWindow {
                 id: stack
                 anchors.fill: parent
                 initialItem: "pages/StandaloneAnalysisPage.qml"
+            }
+        }
+    }
+
+    Component {
+        id: datapointManagerWindowComponent
+        ApplicationWindow {
+            id: datapointWin
+            width: 1200
+            height: 800
+            visible: false
+            title: "Datapoint & Monoplicate Manager"
+
+            Material.theme: Style.isDark ? Material.Dark : Material.Light
+            Material.accent: Style.accent
+            Material.primary: Style.accent2
+
+            color: Style.bg
+
+            property alias appStack: stack
+
+            StackView {
+                id: stack
+                anchors.fill: parent
+                initialItem: "pages/DatapointManagerPage.qml"
             }
         }
     }

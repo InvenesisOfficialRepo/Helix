@@ -16,6 +16,7 @@ AppContext::AppContext(QObject *parent)
     dashboard_ = new DashboardViewModel(this);
     project_ = new ProjectViewModel(this);
     calendar_ = new CalendarViewModel(this);
+    datapointManager_ = new DatapointManagerViewModel(this);
     feeding_ = new FeedingAnalysisProcessor(this);
 
     // ---------------- Phase 1 wiring (keep) ----------------
@@ -144,6 +145,7 @@ SessionViewModel* AppContext::session() const { return session_; }
 DashboardViewModel* AppContext::dashboard() const { return dashboard_; }
 ProjectViewModel* AppContext::project() const { return project_; }
 CalendarViewModel* AppContext::calendar() const { return calendar_; }
+DatapointManagerViewModel* AppContext::datapointManager() const { return datapointManager_; }
 ThemeManager* AppContext::theme() const { return ThemeManager::instance(); }
 FeedingAnalysisProcessor* AppContext::feedingProcessor() const { return feeding_; }
 

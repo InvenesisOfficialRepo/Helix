@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
 {
     // 1. Initialize QApplication (required for both QWidget and QGui/QML)
     QApplication app(argc, argv);
+    app.setQuitOnLastWindowClosed(false);
 
     // Initialize Logger
     Logger::init("invenesis_merge_app.log");
@@ -51,7 +52,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Invenesis");
     QCoreApplication::setOrganizationDomain("invenesis.com");
     QCoreApplication::setApplicationName("Helix");
-    QCoreApplication::setApplicationVersion("1.2.1");
+    QCoreApplication::setApplicationVersion("1.2.2");
 
     // Load Window Icon
     QIcon appIcon(":/icons/resources/icons/Sphere.png");
@@ -88,15 +89,16 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // 4. Spin up the QML Engine
-    QQmlApplicationEngine engine;
-
     // Instantiate and register AppContext singleton
     AppContext appContext;
-    qmlRegisterSingletonInstance("TestRequests", 1, 0, "App", &appContext);
 
     // Instantiate and register UpdateManager singleton
     UpdateManager updateManager;
+
+    // 4. Spin up the QML Engine
+    QQmlApplicationEngine engine;
+
+    qmlRegisterSingletonInstance("TestRequests", 1, 0, "App", &appContext);
     qmlRegisterSingletonInstance("TestRequests", 1, 0, "UpdateManager", &updateManager);
 
     // Load QML from the compiled QML resources

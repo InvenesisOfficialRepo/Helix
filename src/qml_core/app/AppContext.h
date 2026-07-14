@@ -7,6 +7,7 @@
 #include "viewmodels/DashboardViewModel.h"
 #include "viewmodels/ProjectViewModel.h"
 #include "viewmodels/CalendarViewModel.h"
+#include "viewmodels/DatapointManagerViewModel.h"
 
 #include "db/DbConfig.h"
 
@@ -23,6 +24,7 @@ class AppContext : public QObject
     Q_PROPERTY(DashboardViewModel* dashboard READ dashboard CONSTANT)
     Q_PROPERTY(ProjectViewModel* project READ project CONSTANT)
     Q_PROPERTY(CalendarViewModel* calendar READ calendar CONSTANT)
+    Q_PROPERTY(DatapointManagerViewModel* datapointManager READ datapointManager CONSTANT)
     Q_PROPERTY(ThemeManager* theme READ theme CONSTANT)
     Q_PROPERTY(FeedingAnalysisProcessor* feedingProcessor READ feedingProcessor CONSTANT)
 
@@ -40,6 +42,7 @@ public:
     DashboardViewModel* dashboard() const;
     ProjectViewModel* project() const;
     CalendarViewModel* calendar() const;
+    DatapointManagerViewModel* datapointManager() const;
     ThemeManager* theme() const;
     FeedingAnalysisProcessor* feedingProcessor() const;
 
@@ -58,6 +61,7 @@ private:
     DashboardViewModel* dashboard_ = nullptr;
     ProjectViewModel* project_ = nullptr;
     CalendarViewModel* calendar_ = nullptr;
+    DatapointManagerViewModel* datapointManager_ = nullptr;
     FeedingAnalysisProcessor* feeding_ = nullptr;
 
     // Phase 2: worker thread

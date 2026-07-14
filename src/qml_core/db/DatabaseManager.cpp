@@ -1,6 +1,10 @@
 #include "DatabaseManager.h"
 
 #include <QtSql/QSqlError>
+#include <QMutex>
+#include <QMutexLocker>
+
+static QMutex dbMutex;
 
 bool DatabaseManager::openConnection(const DbConfig& cfg, const QString& connectionName, QString* errorOut)
 {
@@ -21,6 +25,12 @@ bool DatabaseManager::openConnection(const DbConfig& cfg, const QString& connect
             return false;
         }
         return true;
+    }
+
+    QMutexLocker locker(&dbMutex);
+    if (QSqlDatabase::contains(connectionName)) {
+        locker.unlock();
+        return openConnection(cfg, connectionName, errorOut);
     }
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", connectionName);
@@ -53,5 +63,7 @@ void DatabaseManager::closeConnection(const QString& connectionName)
         if (db.isValid())
             db.close();
     }
+    
+    QMutexLocker locker(&dbMutex);
     QSqlDatabase::removeDatabase(connectionName);
 }

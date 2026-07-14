@@ -85,6 +85,8 @@ set(APP_SOURCES
     src/qml_core/viewmodels/DashboardViewModel.cpp
     src/qml_core/viewmodels/ProjectViewModel.h
     src/qml_core/viewmodels/ProjectViewModel.cpp
+    src/qml_core/viewmodels/DatapointManagerViewModel.h
+    src/qml_core/viewmodels/DatapointManagerViewModel.cpp
     src/qml_core/viewmodels/CalendarViewModel.h
     src/qml_core/viewmodels/CalendarViewModel.cpp
     src/qml_core/db/DatabaseManager.h
@@ -98,6 +100,9 @@ set(APP_SOURCES
     src/qml_core/domain/DashboardDtos.h
     src/qml_core/repositories/DashboardRepository.h
     src/qml_core/repositories/DashboardRepository.cpp
+    src/qml_core/domain/ClientDtos.h
+    src/qml_core/repositories/ClientRepository.h
+    src/qml_core/repositories/ClientRepository.cpp
     src/qml_core/domain/BatchDetailDtos.h
     src/qml_core/repositories/BatchRepository.h
     src/qml_core/repositories/BatchRepository.cpp
@@ -258,11 +263,14 @@ qt_add_qml_module(Helix
         qml/pages/CalendarPage.qml
         qml/pages/PublishResultsPage.qml
         qml/pages/PublishDetailPage.qml
+        qml/pages/DatapointManagerPage.qml
+        qml/pages/AnalyticsDashboard.qml
         qml/pages/StandaloneAnalysisPage.qml
         qml/pages/WallboardPage.qml
 
         qml/components/TestCard.qml
         qml/components/PlateHeatmap.qml
+        qml/components/PieChart.qml
         qml/components/StatusPill.qml
         qml/components/CompoundRow.qml
         qml/components/PlanningCalendar.qml
