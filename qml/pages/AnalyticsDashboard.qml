@@ -152,9 +152,11 @@ Item {
             }
 
             // Charts
-            RowLayout {
+            GridLayout {
                 Layout.fillWidth: true
-                spacing: Style.padLg
+                columns: 2
+                columnSpacing: Style.padLg
+                rowSpacing: Style.padLg
 
                 // Client Consumption Chart
                 Rectangle {
@@ -221,7 +223,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: Style.padLg
                         Label {
-                            text: "Test Categories"
+                            text: "Test Categories (Click legend to filter)"
                             font.pixelSize: Style.fontLg
                             font.family: Style.fontPrimaryBold
                             color: Style.text
@@ -230,6 +232,36 @@ Item {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             dataModel: viewModel ? viewModel.testCategoryStats : []
+                            onItemClicked: function(name) {
+                                if (viewModel && name) viewModel.selectCategory(name)
+                            }
+                        }
+                    }
+                }
+
+                // Test Distribution Chart
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 400
+                    color: Style.panel
+                    border.color: Style.border
+                    border.width: 1
+                    radius: Style.radius
+                    visible: viewModel && viewModel.selectedCategory !== ""
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: Style.padLg
+                        Label {
+                            text: "Test Distribution: " + (viewModel ? viewModel.selectedCategory : "")
+                            font.pixelSize: Style.fontLg
+                            font.family: Style.fontPrimaryBold
+                            color: Style.text
+                        }
+                        PieChart {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            dataModel: viewModel ? viewModel.testSpecificStats : []
                         }
                     }
                 }

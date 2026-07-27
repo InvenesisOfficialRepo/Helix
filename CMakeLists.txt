@@ -308,6 +308,8 @@ qt_add_qml_module(Helix
         qml/fonts/MavenPro-Bold.ttf
         qml/fonts/Inter-Italic-VariableFont.ttf
         qml/fonts/Inter-VariableFont.ttf
+        qml/fonts/JetBrainsMono-VariableFont.ttf
+        qml/fonts/JetBrainsMono-Italic-VariableFont.ttf
         qml/images/sphere.png
 )
 

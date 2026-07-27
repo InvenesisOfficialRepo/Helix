@@ -98,6 +98,23 @@ QFuture<QVariantMap> ClientRepository::fetchAnalyticsStats(const QString& client
                 }
             }
             stats["testCategoryStats"] = testCategoryStats;
+
+            QVariantList testSpecificStats;
+            if (query.exec("SELECT tv.assay_category, tv.test_id, COUNT(*) "
+                           "FROM tracked_test_compounds c "
+                           "JOIN tracked_test_batches b ON c.batch_id = b.batch_id "
+                           "JOIN tests_vocabulary tv ON b.test_code = tv.test_id "
+                           "WHERE tv.assay_category IS NOT NULL "
+                           "GROUP BY tv.assay_category, tv.test_id")) {
+                while (query.next()) {
+                    QVariantMap item;
+                    item["category"] = query.value(0).toString();
+                    item["name"] = query.value(1).toString();
+                    item["value"] = query.value(2).toInt();
+                    testSpecificStats.append(item);
+                }
+            }
+            stats["testSpecificStats"] = testSpecificStats;
         } else {
             // Filter by specific client
             query.prepare("SELECT is_annualized, total_datapoints, used_datapoints FROM clients WHERE client_code = :client_code");
@@ -158,6 +175,26 @@ QFuture<QVariantMap> ClientRepository::fetchAnalyticsStats(const QString& client
                 }
             }
             stats["testCategoryStats"] = testCategoryStats;
+
+            QVariantList testSpecificStats;
+            query.prepare("SELECT tv.assay_category, tv.test_id, COUNT(*) "
+                          "FROM tracked_test_compounds c "
+                          "JOIN tracked_test_batches b ON c.batch_id = b.batch_id "
+                          "JOIN projects p ON b.project_code = p.project_code "
+                          "JOIN tests_vocabulary tv ON b.test_code = tv.test_id "
+                          "WHERE p.client_code = :client_code AND tv.assay_category IS NOT NULL "
+                          "GROUP BY tv.assay_category, tv.test_id");
+            query.bindValue(":client_code", clientCode);
+            if (query.exec()) {
+                while (query.next()) {
+                    QVariantMap item;
+                    item["category"] = query.value(0).toString();
+                    item["name"] = query.value(1).toString();
+                    item["value"] = query.value(2).toInt();
+                    testSpecificStats.append(item);
+                }
+            }
+            stats["testSpecificStats"] = testSpecificStats;
         }
         
         return stats;

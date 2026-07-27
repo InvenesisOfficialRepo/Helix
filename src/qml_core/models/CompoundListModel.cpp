@@ -9,15 +9,15 @@ CompoundListModel::CompoundListModel(QObject *parent)
 int CompoundListModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid()) return 0;
-    return items_.size();
+    return visibleIndices_.size();
 }
 
 QVariant CompoundListModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || index.row() < 0 || index.row() >= items_.size())
+    if (!index.isValid() || index.row() < 0 || index.row() >= visibleIndices_.size())
         return {};
 
-    const auto &it = items_.at(index.row());
+    const auto &it = items_.at(visibleIndices_[index.row()]);
     switch (role) {
     case TrackedCompoundIdRole: return it.trackedCompoundId;
     case CompoundNameRole:      return it.compoundName;
@@ -49,11 +49,38 @@ QHash<int, QByteArray> CompoundListModel::roleNames() const
     };
 }
 
+QString CompoundListModel::speciesFilter() const
+{
+    return speciesFilter_;
+}
+
+void CompoundListModel::setSpeciesFilter(const QString& species)
+{
+    if (speciesFilter_ == species) return;
+    beginResetModel();
+    speciesFilter_ = species;
+    updateVisibleIndices();
+    endResetModel();
+    emit speciesFilterChanged();
+}
+
+void CompoundListModel::updateVisibleIndices()
+{
+    visibleIndices_.clear();
+    for (int i = 0; i < items_.size(); ++i) {
+        if (speciesFilter_.isEmpty() || items_[i].species == speciesFilter_) {
+            visibleIndices_.push_back(i);
+        }
+    }
+}
+
 void CompoundListModel::setItems(QVector<CompoundItem> items)
 {
     beginResetModel();
     items_ = std::move(items);
+    updateVisibleIndices();
     endResetModel();
+    emit compoundsChanged();
 }
 
 void CompoundListModel::clearSelection()
@@ -61,19 +88,23 @@ void CompoundListModel::clearSelection()
     for (int i = 0; i < items_.size(); ++i) {
         if (items_[i].selected) {
             items_[i].selected = false;
-            const auto idx = index(i);
-            emit dataChanged(idx, idx, {SelectedRole});
+            int visIdx = visibleIndices_.indexOf(i);
+            if (visIdx != -1) {
+                const auto idx = index(visIdx);
+                emit dataChanged(idx, idx, {SelectedRole});
+            }
         }
     }
 }
 
 void CompoundListModel::setSelected(int row, bool selected)
 {
-    if (row < 0 || row >= items_.size()) return;
-    if (items_[row].status != Status::Pending || !items_[row].hasSolution) return;
+    if (row < 0 || row >= visibleIndices_.size()) return;
+    int realIdx = visibleIndices_[row];
+    if (items_[realIdx].status != Status::Pending || !items_[realIdx].hasSolution) return;
 
-    if (items_[row].selected == selected) return;
-    items_[row].selected = selected;
+    if (items_[realIdx].selected == selected) return;
+    items_[realIdx].selected = selected;
 
     const auto idx = index(row);
     emit dataChanged(idx, idx, {SelectedRole});
@@ -81,9 +112,10 @@ void CompoundListModel::setSelected(int row, bool selected)
 
 void CompoundListModel::selectAllPending()
 {
-    for (int i = 0; i < items_.size(); ++i) {
-        if (items_[i].status == Status::Pending && items_[i].hasSolution && !items_[i].selected) {
-            items_[i].selected = true;
+    for (int i = 0; i < visibleIndices_.size(); ++i) {
+        int realIdx = visibleIndices_[i];
+        if (items_[realIdx].status == Status::Pending && items_[realIdx].hasSolution && !items_[realIdx].selected) {
+            items_[realIdx].selected = true;
             const auto idx = index(i);
             emit dataChanged(idx, idx, {SelectedRole});
         }
@@ -102,22 +134,28 @@ QStringList CompoundListModel::selectedIds() const
 
 void CompoundListModel::selectAllBySpecies(const QString& species)
 {
-    for (int i = 0; i < items_.size(); ++i) {
-        if (items_[i].status == Status::Pending && items_[i].species == species && items_[i].hasSolution) {
-            items_[i].selected = true;
+    for (int i = 0; i < visibleIndices_.size(); ++i) {
+        int realIdx = visibleIndices_[i];
+        if (items_[realIdx].status == Status::Pending && items_[realIdx].species == species && items_[realIdx].hasSolution) {
+            items_[realIdx].selected = true;
         }
     }
-    emit dataChanged(index(0, 0), index(items_.size() - 1, 0), {SelectedRole});
+    if (!visibleIndices_.isEmpty()) {
+        emit dataChanged(index(0, 0), index(visibleIndices_.size() - 1, 0), {SelectedRole});
+    }
 }
 
 void CompoundListModel::selectAllBySolvent(const QString& solvent)
 {
-    for (int i = 0; i < items_.size(); ++i) {
-        if (items_[i].status == Status::Pending && items_[i].solvent == solvent && items_[i].hasSolution) {
-            items_[i].selected = true;
+    for (int i = 0; i < visibleIndices_.size(); ++i) {
+        int realIdx = visibleIndices_[i];
+        if (items_[realIdx].status == Status::Pending && items_[realIdx].solvent == solvent && items_[realIdx].hasSolution) {
+            items_[realIdx].selected = true;
         }
     }
-    emit dataChanged(index(0, 0), index(items_.size() - 1, 0), {SelectedRole});
+    if (!visibleIndices_.isEmpty()) {
+        emit dataChanged(index(0, 0), index(visibleIndices_.size() - 1, 0), {SelectedRole});
+    }
 }
 
 QStringList CompoundListModel::availableSpecies() const

@@ -100,6 +100,9 @@ void DatapointManagerViewModel::loadAnalytics() {
         m_clientConsumptionStats = results.value("clientConsumptionStats").toList();
         m_assayTypeStats = results.value("assayTypeStats").toList();
         m_testCategoryStats = results.value("testCategoryStats").toList();
+        m_allTestSpecificStats = results.value("testSpecificStats").toList();
+        
+        updateTestSpecificStats();
         
         emit analyticsChanged();
         setLoading(false);
@@ -107,6 +110,34 @@ void DatapointManagerViewModel::loadAnalytics() {
     });
     
     watcher->setFuture(m_repository.fetchAnalyticsStats(m_selectedAnalyticsClient));
+}
+
+QVariantList DatapointManagerViewModel::testSpecificStats() const {
+    return m_testSpecificStats;
+}
+
+QString DatapointManagerViewModel::selectedCategory() const {
+    return m_selectedCategory;
+}
+
+void DatapointManagerViewModel::selectCategory(const QString& category) {
+    if (m_selectedCategory != category) {
+        m_selectedCategory = category;
+        emit selectedCategoryChanged();
+        updateTestSpecificStats();
+    }
+}
+
+void DatapointManagerViewModel::updateTestSpecificStats() {
+    QVariantList filtered;
+    for (const QVariant& v : m_allTestSpecificStats) {
+        QVariantMap item = v.toMap();
+        if (m_selectedCategory.isEmpty() || item["category"].toString() == m_selectedCategory) {
+            filtered.append(item);
+        }
+    }
+    m_testSpecificStats = filtered;
+    emit testSpecificStatsChanged();
 }
 
 void DatapointManagerViewModel::toggleAnnualization(const QString& clientCode, bool isAnnualized) {

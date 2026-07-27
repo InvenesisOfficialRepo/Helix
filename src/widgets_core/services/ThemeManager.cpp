@@ -11,7 +11,7 @@ ThemeManager* ThemeManager::instance()
 
 ThemeManager::ThemeManager(QObject *parent)
     : QObject(parent)
-    , currentThemeName_("Clinical Dark")
+    , currentThemeName_("Workstation Dark")
 {
     setupPresets();
 }
@@ -22,12 +22,12 @@ void ThemeManager::initialize(QApplication* app)
     
     // Load last saved preset theme
     QSettings settings("Invenesis", "MergeApp");
-    QString savedThemeName = settings.value("themePreset", "Clinical Dark").toString();
+    QString savedThemeName = settings.value("themePreset", "Workstation Dark").toString();
     
     if (themes_.contains(savedThemeName)) {
         currentThemeName_ = savedThemeName;
     } else {
-        currentThemeName_ = "Clinical Dark";
+        currentThemeName_ = "Workstation Dark";
     }
     
     compileAndApplyQss();
@@ -126,113 +126,129 @@ QColor ThemeManager::statusBad() const
     return themes_[currentThemeName_].statusBad;
 }
 
+
+QColor ThemeManager::surfaceHeader() const { return themes_[currentThemeName_].surfaceHeader; }
+QColor ThemeManager::surfaceInput() const { return themes_[currentThemeName_].surfaceInput; }
+QColor ThemeManager::surfaceHover() const { return themes_[currentThemeName_].surfaceHover; }
+QColor ThemeManager::surfaceActive() const { return themes_[currentThemeName_].surfaceActive; }
+QColor ThemeManager::borderStrong() const { return themes_[currentThemeName_].borderStrong; }
+QColor ThemeManager::edge() const { return themes_[currentThemeName_].edge; }
+QColor ThemeManager::textMuted() const { return themes_[currentThemeName_].textMuted; }
+QColor ThemeManager::textDisabled() const { return themes_[currentThemeName_].textDisabled; }
+
+QString ThemeManager::density() const { return density_; }
+void ThemeManager::setDensity(const QString &density) {
+    if (density_ == density) return;
+    density_ = density;
+    emit themeChanged();
+}
+
 void ThemeManager::setupPresets()
 {
-    // 1. Clinical Dark (Default Slate/Navy theme)
+    // Teal Accent rgb(47, 179, 166) -> #2fb3a6
+    // Darkest
+    ThemeColors darkest;
+    darkest.isDark = true;
+    darkest.backgroundMain = QColor("#1e1e1e");
+    darkest.backgroundPanel = QColor("#252525");
+    darkest.backgroundPanel2 = QColor("#2f2f2f");
+    darkest.surfaceHeader = QColor("#1a1a1a");
+    darkest.surfaceInput = QColor("#141414");
+    darkest.surfaceHover = QColor("#333333");
+    darkest.surfaceActive = QColor("#3a3a3a");
+    darkest.borderCard = QColor("#121212");
+    darkest.divider = QColor("#121212");
+    darkest.borderStrong = QColor("#0d0d0d");
+    darkest.edge = QColor("#3a3a3a");
+    darkest.textPrimary = QColor("#d2d2d2");
+    darkest.textSecondary = QColor("#9a9a9a");
+    darkest.textMuted = QColor("#6a6a6a");
+    darkest.textDisabled = QColor("#4e4e4e");
+    darkest.brandAccent = QColor("#2fb3a6");
+    darkest.brandAccent2 = QColor("#259689");
+    darkest.statusOk = QColor("#4fb06a");
+    darkest.statusWarn = QColor("#d9a441");
+    darkest.statusBad = QColor("#d95757");
+    themes_.insert("Workstation Darkest", darkest);
+
+    // Dark
     ThemeColors dark;
     dark.isDark = true;
-    dark.backgroundMain = QColor("#0B1220");
-    dark.backgroundPanel = QColor("#0F172A");
-    dark.backgroundPanel2 = QColor("#111C33");
-    dark.borderCard = QColor("#324466");
-    dark.divider = QColor("#1E2A41");
-    dark.textPrimary = QColor("#E7EEF8");
-    dark.textSecondary = QColor("#909EB0");
-    dark.brandAccent = QColor("#30afb3");
-    dark.brandAccent2 = QColor("#394861");
-    dark.statusOk = QColor("#98c417");
-    dark.statusWarn = QColor("#E5A100");
-    dark.statusBad = QColor("#D64545");
-    themes_.insert("Clinical Dark", dark);
+    dark.backgroundMain = QColor("#2b2b2b");
+    dark.backgroundPanel = QColor("#333333");
+    dark.backgroundPanel2 = QColor("#3d3d3d");
+    dark.surfaceHeader = QColor("#262626");
+    dark.surfaceInput = QColor("#1c1c1c");
+    dark.surfaceHover = QColor("#434343");
+    dark.surfaceActive = QColor("#4a4a4a");
+    dark.borderCard = QColor("#1c1c1c");
+    dark.divider = QColor("#1c1c1c");
+    dark.borderStrong = QColor("#161616");
+    dark.edge = QColor("#4a4a4a");
+    dark.textPrimary = QColor("#dddddd");
+    dark.textSecondary = QColor("#a4a4a4");
+    dark.textMuted = QColor("#727272");
+    dark.textDisabled = QColor("#585858");
+    dark.brandAccent = QColor("#2fb3a6");
+    dark.brandAccent2 = QColor("#259689");
+    dark.statusOk = QColor("#4fb06a");
+    dark.statusWarn = QColor("#d9a441");
+    dark.statusBad = QColor("#d95757");
+    themes_.insert("Workstation Dark", dark);
 
-    // 2. Swiss Light (Clean White/Gray theme)
+    // Medium
+    ThemeColors medium;
+    medium.isDark = true;
+    medium.backgroundMain = QColor("#525252");
+    medium.backgroundPanel = QColor("#5b5b5b");
+    medium.backgroundPanel2 = QColor("#666666");
+    medium.surfaceHeader = QColor("#484848");
+    medium.surfaceInput = QColor("#3a3a3a");
+    medium.surfaceHover = QColor("#6b6b6b");
+    medium.surfaceActive = QColor("#747474");
+    medium.borderCard = QColor("#373737");
+    medium.divider = QColor("#373737");
+    medium.borderStrong = QColor("#2e2e2e");
+    medium.edge = QColor("#6f6f6f");
+    medium.textPrimary = QColor("#f2f2f2");
+    medium.textSecondary = QColor("#cccccc");
+    medium.textMuted = QColor("#a2a2a2");
+    medium.textDisabled = QColor("#828282");
+    medium.brandAccent = QColor("#2fb3a6");
+    medium.brandAccent2 = QColor("#259689");
+    medium.statusOk = QColor("#4fb06a");
+    medium.statusWarn = QColor("#d9a441");
+    medium.statusBad = QColor("#d95757");
+    themes_.insert("Workstation Medium", medium);
+
+    // Light
     ThemeColors light;
     light.isDark = false;
-    light.backgroundMain = QColor("#F2F0EF");
-    light.backgroundPanel = QColor("#F8FAFC");
-    light.backgroundPanel2 = QColor("#F1F5F9");
-    light.borderCard = QColor("#D6DCE6");
-    light.divider = QColor("#E2E8F0");
-    light.textPrimary = QColor("#212934");
-    light.textSecondary = QColor("#5D6A7E");
-    light.brandAccent = QColor("#30afb3");
-    light.brandAccent2 = QColor("#394861");
-    light.statusOk = QColor("#98c417");
-    light.statusWarn = QColor("#E5A100");
-    light.statusBad = QColor("#D64545");
-    themes_.insert("Swiss Light", light);
+    light.backgroundMain = QColor("#bdbdbd");
+    light.backgroundPanel = QColor("#c9c9c9");
+    light.backgroundPanel2 = QColor("#d6d6d6");
+    light.surfaceHeader = QColor("#b0b0b0");
+    light.surfaceInput = QColor("#eef0f2");
+    light.surfaceHover = QColor("#d0d0d0");
+    light.surfaceActive = QColor("#c0c0c0");
+    light.borderCard = QColor("#909090");
+    light.divider = QColor("#909090");
+    light.borderStrong = QColor("#7c7c7c");
+    light.edge = QColor("#9a9a9a");
+    light.textPrimary = QColor("#1c1c1c");
+    light.textSecondary = QColor("#464646");
+    light.textMuted = QColor("#6a6a6a");
+    light.textDisabled = QColor("#9a9a9a");
+    light.brandAccent = QColor("#2fb3a6");
+    light.brandAccent2 = QColor("#259689");
+    light.statusOk = QColor("#4fb06a");
+    light.statusWarn = QColor("#d9a441");
+    light.statusBad = QColor("#d95757");
+    themes_.insert("Workstation Light", light);
 
-    // 3. Cyberpunk Neon (Cool Deep Violet/Magenta theme)
-    ThemeColors cyberpunk;
-    cyberpunk.isDark = true;
-    cyberpunk.backgroundMain = QColor("#0F081D");
-    cyberpunk.backgroundPanel = QColor("#1A0B2E");
-    cyberpunk.backgroundPanel2 = QColor("#251240");
-    cyberpunk.borderCard = QColor("#D946EF");
-    cyberpunk.divider = QColor("#A21CAF");
-    cyberpunk.textPrimary = QColor("#FDF4FF");
-    cyberpunk.textSecondary = QColor("#D8B4FE");
-    cyberpunk.brandAccent = QColor("#F43F5E");
-    cyberpunk.brandAccent2 = QColor("#A21CAF");
-    cyberpunk.statusOk = QColor("#10B981");
-    cyberpunk.statusWarn = QColor("#F59E0B");
-    cyberpunk.statusBad = QColor("#EF4444");
-    themes_.insert("Cyberpunk Neon", cyberpunk);
-
-    // 4. Forest Laboratory (Clean Forest/Mint theme)
-    ThemeColors forest;
-    forest.isDark = true;
-    forest.backgroundMain = QColor("#0B1E19");
-    forest.backgroundPanel = QColor("#0F2922");
-    forest.backgroundPanel2 = QColor("#163D33");
-    forest.borderCard = QColor("#206E5B");
-    forest.divider = QColor("#1A4C40");
-    forest.textPrimary = QColor("#F0FDF4");
-    forest.textSecondary = QColor("#A7F3D0");
-    forest.brandAccent = QColor("#10B981");
-    forest.brandAccent2 = QColor("#206E5B");
-    forest.statusOk = QColor("#34D399");
-    forest.statusWarn = QColor("#F59E0B");
-    forest.statusBad = QColor("#F87171");
-    themes_.insert("Forest Laboratory", forest);
-
-    // 5. Custom theme (User personalized)
-    ThemeColors custom;
-    QSettings settings("Invenesis", "MergeApp");
-    custom.backgroundMain = QColor(settings.value("custom_backgroundMain", "#0B1220").toString());
-    custom.backgroundPanel = QColor(settings.value("custom_backgroundPanel", "#0F172A").toString());
-    custom.backgroundPanel2 = QColor(settings.value("custom_backgroundPanel2", "#111C33").toString());
-    custom.borderCard = QColor(settings.value("custom_borderCard", "#324466").toString());
-    custom.divider = QColor(settings.value("custom_divider", "#1E2A41").toString());
-    custom.textPrimary = QColor(settings.value("custom_textPrimary", "#E7EEF8").toString());
-    custom.textSecondary = QColor(settings.value("custom_textSecondary", "#909EB0").toString());
-    custom.brandAccent = QColor(settings.value("custom_brandAccent", "#30afb3").toString());
-    custom.brandAccent2 = QColor(settings.value("custom_brandAccent2", "#394861").toString());
-    custom.statusOk = QColor(settings.value("custom_statusOk", "#98c417").toString());
-    custom.statusWarn = QColor(settings.value("custom_statusWarn", "#E5A100").toString());
-    custom.statusBad = QColor(settings.value("custom_statusBad", "#D64545").toString());
-    custom.isDark = (custom.backgroundMain.lightness() < 128);
+    // Custom
+    ThemeColors custom = dark;
     themes_.insert("Custom", custom);
-
-    // 6. Load user saved custom named themes
-    QStringList customThemeNames = settings.value("customThemeNames").toStringList();
-    for (const QString &name : customThemeNames) {
-        ThemeColors c;
-        c.backgroundMain = QColor(settings.value("customtheme_" + name + "_backgroundMain", "#0B1220").toString());
-        c.backgroundPanel = QColor(settings.value("customtheme_" + name + "_backgroundPanel", "#0F172A").toString());
-        c.backgroundPanel2 = QColor(settings.value("customtheme_" + name + "_backgroundPanel2", "#111C33").toString());
-        c.borderCard = QColor(settings.value("customtheme_" + name + "_borderCard", "#324466").toString());
-        c.divider = QColor(settings.value("customtheme_" + name + "_divider", "#1E2A41").toString());
-        c.textPrimary = QColor(settings.value("customtheme_" + name + "_textPrimary", "#E7EEF8").toString());
-        c.textSecondary = QColor(settings.value("customtheme_" + name + "_textSecondary", "#909EB0").toString());
-        c.brandAccent = QColor(settings.value("customtheme_" + name + "_brandAccent", "#30afb3").toString());
-        c.brandAccent2 = QColor(settings.value("customtheme_" + name + "_brandAccent2", "#394861").toString());
-        c.statusOk = QColor(settings.value("customtheme_" + name + "_statusOk", "#98c417").toString());
-        c.statusWarn = QColor(settings.value("customtheme_" + name + "_statusWarn", "#E5A100").toString());
-        c.statusBad = QColor(settings.value("customtheme_" + name + "_statusBad", "#D64545").toString());
-        c.isDark = (c.backgroundMain.lightness() < 128);
-        themes_.insert(name, c);
-    }
 }
 
 void ThemeManager::compileAndApplyQss()
@@ -334,8 +350,8 @@ void ThemeManager::resetCustomThemeToPreset(const QString &presetName)
 
 void ThemeManager::saveCustomTheme(const QString &presetName)
 {
-    if (presetName.isEmpty() || presetName == "Custom" || presetName == "Clinical Dark" ||
-        presetName == "Swiss Light" || presetName == "Cyberpunk Neon" || presetName == "Forest Laboratory") {
+    if (presetName.isEmpty() || presetName == "Custom" || presetName == "Workstation Dark" ||
+        presetName == "Workstation Light" || presetName == "Workstation Medium" || presetName == "Workstation Darkest") {
         return;
     }
 
@@ -375,8 +391,8 @@ void ThemeManager::saveCustomTheme(const QString &presetName)
 
 void ThemeManager::deleteCustomTheme(const QString &presetName)
 {
-    if (presetName.isEmpty() || presetName == "Custom" || presetName == "Clinical Dark" ||
-        presetName == "Swiss Light" || presetName == "Cyberpunk Neon" || presetName == "Forest Laboratory") {
+    if (presetName.isEmpty() || presetName == "Custom" || presetName == "Workstation Dark" ||
+        presetName == "Workstation Light" || presetName == "Workstation Medium" || presetName == "Workstation Darkest") {
         return;
     }
 
@@ -406,5 +422,5 @@ void ThemeManager::deleteCustomTheme(const QString &presetName)
     settings.remove("customtheme_" + presetName + "_statusBad");
 
     // Fall back to default theme
-    selectTheme("Clinical Dark");
+    selectTheme("Workstation Dark");
 }

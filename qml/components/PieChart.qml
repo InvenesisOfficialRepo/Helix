@@ -9,6 +9,8 @@ Item {
     
     property var colors: ["#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#6366f1", "#84cc16"]
     
+    signal itemClicked(string name)
+    
     onDataModelChanged: {
         canvas.requestPaint()
     }
@@ -88,14 +90,31 @@ Item {
                 }
             }
             
-            delegate: RowLayout {
+            delegate: Item {
                 width: ListView.view.width
                 height: 30
-                spacing: 10
+                
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+                    onClicked: chartRoot.itemClicked(name)
+                    
+                    Rectangle {
+                        anchors.fill: parent
+                        color: parent.containsMouse ? Style.panel2 : "transparent"
+                        radius: 4
+                    }
+                }
+                
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 10
                 
                 Rectangle {
                     width: 12; height: 12; radius: 6
                     color: (typeof index !== "undefined" && index >= 0) ? chartRoot.colors[index % 10] : "transparent"
+                    Layout.leftMargin: 5
                 }
                 Label {
                     text: name || "Unknown"
@@ -107,8 +126,10 @@ Item {
                     text: value
                     color: Style.subText
                     font.bold: true
+                    Layout.rightMargin: 5
                 }
             }
+        }
         }
     }
 }

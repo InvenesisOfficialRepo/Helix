@@ -50,8 +50,8 @@ Page {
             availableSolvents: App.project.compoundsModel.availableSolvents
 
             onSelectAllPendingClicked: App.project.selectAllPending()
-            onSelectAllBySpeciesClicked: function(species) { App.project.compoundsModel.selectAllBySpecies(species) }
-            onSelectAllBySolventClicked: function(solvent) { App.project.compoundsModel.selectAllBySolvent(solvent) }
+            onFilterBySpeciesChanged: { App.project.compoundsModel.setSpeciesFilter(species); }
+            onSelectAllBySolventClicked: { App.project.compoundsModel.selectAllBySolvent(solvent); }
 
             onSendSelectedClicked: {
                 if (App.project.scheduledFor && App.project.scheduledFor.isValid && App.project.scheduledFor.isValid()) {
@@ -88,7 +88,7 @@ Page {
                 statusText: model.statusText
                 selectable: model.selectable
                 checked: model.selected
-                onToggled: function(checked) { App.project.compoundsModel.setSelected(index, checked) }
+                onToggled: { App.project.compoundsModel.setSelected(index, checked) }
             }
 
             footer: Item { height: 8 }

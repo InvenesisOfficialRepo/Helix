@@ -20,6 +20,7 @@ RowLayout {
     signal selectAllBySpeciesClicked(string species)
     signal selectAllBySolventClicked(string solvent)
     signal sendSelectedClicked()
+    signal filterBySpeciesChanged(string species)
 
     Button {
         text: "Select All Pending"
@@ -27,19 +28,12 @@ RowLayout {
     }
 
     ComboBox {
-        id: speciesCombo
+        id: speciesFilterCombo
         visible: root.availableSpecies.length > 0
-        model: root.availableSpecies
-        textRole: ""
-    }
-
-    Button {
-        text: "Select by Species"
-        visible: root.availableSpecies.length > 0
-        onClicked: {
-            if (speciesCombo.currentText !== "") {
-                root.selectAllBySpeciesClicked(speciesCombo.currentText)
-            }
+        model: ["All Species"].concat(root.availableSpecies)
+        onActivated: {
+            var val = speciesFilterCombo.textAt(index) === "All Species" ? "" : speciesFilterCombo.textAt(index);
+            root.filterBySpeciesChanged(val);
         }
     }
 

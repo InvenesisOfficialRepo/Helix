@@ -35,7 +35,9 @@ int main(int argc, char *argv[])
         ":/qt/qml/TestRequests/qml/fonts/MavenPro-Bold.ttf",
         ":/qt/qml/TestRequests/qml/fonts/MaterialSymbolsOutlined.ttf",
         ":/qt/qml/TestRequests/qml/fonts/Inter-VariableFont.ttf",
-        ":/qt/qml/TestRequests/qml/fonts/Inter-Italic-VariableFont.ttf"
+        ":/qt/qml/TestRequests/qml/fonts/Inter-Italic-VariableFont.ttf",
+        ":/qt/qml/TestRequests/qml/fonts/JetBrainsMono-VariableFont.ttf",
+        ":/qt/qml/TestRequests/qml/fonts/JetBrainsMono-Italic-VariableFont.ttf"
     };
 
     for (const QString &path : fontPaths) {

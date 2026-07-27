@@ -20,7 +20,8 @@ class DatapointManagerViewModel : public QObject {
     Q_PROPERTY(QVariantList clientConsumptionStats READ clientConsumptionStats NOTIFY analyticsChanged)
     Q_PROPERTY(QVariantList assayTypeStats READ assayTypeStats NOTIFY analyticsChanged)
     Q_PROPERTY(QVariantList testCategoryStats READ testCategoryStats NOTIFY analyticsChanged)
-
+    Q_PROPERTY(QVariantList testSpecificStats READ testSpecificStats NOTIFY testSpecificStatsChanged)
+    Q_PROPERTY(QString selectedCategory READ selectedCategory NOTIFY selectedCategoryChanged)
 public:
     explicit DatapointManagerViewModel(QObject *parent = nullptr);
 
@@ -37,9 +38,13 @@ public:
     QVariantList assayTypeStats() const;
     QVariantList testCategoryStats() const;
 
+    QVariantList testSpecificStats() const;
+    QString selectedCategory() const;
+
     Q_INVOKABLE void loadClients();
     Q_INVOKABLE void loadAnalytics();
     Q_INVOKABLE void setAnalyticsClient(const QString& clientCode);
+    Q_INVOKABLE void selectCategory(const QString& category);
     Q_INVOKABLE void toggleAnnualization(const QString& clientCode, bool isAnnualized);
     Q_INVOKABLE void updateDatapoints(const QString& clientCode, int total, int used);
     
@@ -55,11 +60,14 @@ signals:
     void selectedClientPricingChanged();
     void selectedAnalyticsClientChanged();
     void analyticsChanged();
+    void testSpecificStatsChanged();
+    void selectedCategoryChanged();
     void errorOccurred(const QString& message);
     void successMessage(const QString& message);
 
 private:
     void setLoading(bool loading);
+    void updateTestSpecificStats();
     
     bool m_isLoading = false;
     QVariantList m_clients;
@@ -71,6 +79,11 @@ private:
     QVariantList m_clientConsumptionStats;
     QVariantList m_assayTypeStats;
     QVariantList m_testCategoryStats;
+    
+    QVariantList m_allTestSpecificStats;
+    QVariantList m_testSpecificStats;
+    QString m_selectedCategory;
+    
     QString m_selectedAnalyticsClient;
     
     ClientRepository m_repository;
