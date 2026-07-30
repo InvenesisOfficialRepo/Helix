@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.2.2",
-  "release_notes": "<h3>Helix 1.2.2</h3><ul><li>Added the new Data Point Manager module to track annualized client contracts, manage custom test pricing overrides, and visualize test consumption (Assay Type and Test Categories).</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.2/Helix_Setup.exe",
-  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.2/Helix.dmg"
+  "latest_version": "1.2.3",
+  "release_notes": "<h3>Helix 1.2.3</h3><ul><li>Added the new LayoutMaker module to Helix as an integrated app.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.3/Helix_Setup.exe",
+  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.3/Helix.dmg"
 }
