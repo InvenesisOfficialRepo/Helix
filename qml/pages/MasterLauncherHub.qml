@@ -595,6 +595,118 @@ Page {
                     onClicked: win.launchDatapointManager()
                 }
             }
+
+            // Card 5: Layout Maker
+            Frame {
+                id: cardLayoutMaker
+                Layout.preferredWidth: 380
+                Layout.preferredHeight: 320
+                padding: Style.padLg
+                
+                scale: mouseLayoutMaker.containsMouse ? 1.03 : 1.0
+                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+                background: Rectangle {
+                    radius: Style.radiusLg
+                    color: Style.panel
+                    border.color: mouseLayoutMaker.containsMouse ? Style.teal : Style.border
+                    border.width: mouseLayoutMaker.containsMouse ? 2 : Style.borderWidth
+
+                    // Glassmorphism subtle glow
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: "transparent"
+                        border.color: Qt.rgba(Style.teal.r, Style.teal.g, Style.teal.b, 0.2)
+                        border.width: 1
+                        visible: mouseLayoutMaker.containsMouse
+                    }
+                }
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: Style.pad
+
+                    // Card header
+                    RowLayout {
+                        spacing: Style.pad
+                        
+                        Label {
+                            text: "grid_view"
+                            font.family: Style.iconFontFamily
+                            font.pixelSize: Style.fontXxl + 6
+                            color: Style.teal
+                        }
+
+                        ColumnLayout {
+                            spacing: 2
+                            Label {
+                                text: "Layout Maker"
+                                font.family: Style.fontPrimaryBold
+                                font.pixelSize: Style.fontLg
+                                color: Style.text
+                            }
+                            Label {
+                                text: "384 & 1536 Plate Assembly"
+                                font.family: Style.fontSecondary
+                                font.pixelSize: Style.fontXs
+                                color: Style.subText
+                            }
+                        }
+                    }
+
+                    // Card Body
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        text: "Construct complex 384-well and 1536-well plate layouts by merging 96-well and 384-well CSV exports. Visually inspect quadrants, assign volumes, and export robot-ready formats."
+                        wrapMode: Text.Wrap
+                        color: Style.subText
+                        font.family: Style.fontSecondary
+                        font.pixelSize: Style.fontSm + 1
+                        lineHeight: 1.25
+                    }
+
+                    // Tech Tags
+                    RowLayout {
+                        spacing: Style.padXs
+                        Layout.fillWidth: true
+
+                        Repeater {
+                            model: ["Widgets", "Plates", "CSV", "Robotics"]
+                            Rectangle {
+                                color: Qt.rgba(Style.accent2.r, Style.accent2.g, Style.accent2.b, 0.15)
+                                border.color: Style.border
+                                radius: 4
+                                implicitWidth: tagText5.implicitWidth + 12
+                                implicitHeight: tagText5.implicitHeight + 6
+
+                                Label {
+                                    id: tagText5
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    font.family: Style.fontSecondary
+                                    font.pixelSize: Style.fontXs - 1
+                                    color: Style.text
+                                }
+                            }
+                        }
+                    }
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: "Launch Layout Maker"
+                        onClicked: App.launchLayoutMaker()
+                    }
+                }
+
+                MouseArea {
+                    id: mouseLayoutMaker
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: App.launchLayoutMaker()
+                }
+            }
         }
 
         }
@@ -602,7 +714,7 @@ Page {
         PageIndicator {
             id: pageIndicator
             Layout.alignment: Qt.AlignHCenter
-            count: 4
+            count: 5
             currentIndex: Math.max(0, Math.min(count - 1, Math.round(cardCarousel.contentX / (cardRow.implicitWidth / count))))
             
             delegate: Rectangle {

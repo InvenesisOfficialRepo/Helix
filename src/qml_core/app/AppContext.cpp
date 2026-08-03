@@ -2,7 +2,7 @@
 #include "ui/databaseviewwindow.h"
 #include "ThemeManager.h"
 #include "services/FeedingAnalysisProcessor.h"
-
+#include "LayoutMakerWindow.h"
 #include <QMetaObject>
 #include <QUuid>
 #include <QTimer>
@@ -173,4 +173,17 @@ void AppContext::launchWidgetsApp()
     widgetsMainWindow_ = new MainWindow(role);
     widgetsMainWindow_->setAttribute(Qt::WA_DeleteOnClose);
     widgetsMainWindow_->show();
+}
+
+void AppContext::launchLayoutMaker()
+{
+    if (layoutMakerWindow_) {
+        layoutMakerWindow_->raise();
+        layoutMakerWindow_->activateWindow();
+        return;
+    }
+
+    layoutMakerWindow_ = new LayoutMakerWindow();
+    layoutMakerWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    layoutMakerWindow_->show();
 }

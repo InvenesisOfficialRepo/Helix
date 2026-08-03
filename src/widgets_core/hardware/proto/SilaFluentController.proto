@@ -1,0 +1,345 @@
+syntax = "proto3";
+
+import "SiLAFramework.proto";
+
+package sila2.tecan.fluent.silafluentcontroller.v1;
+
+/* Denotes a service to remote-control FluentControl */
+service SilaFluentController {
+  /* Adds new labware to the worktable */
+  rpc AddLabware (sila2.tecan.fluent.silafluentcontroller.v1.AddLabware_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.AddLabware_Responses) {}
+  /* Removes the labware with the given name */
+  rpc RemoveLabware (sila2.tecan.fluent.silafluentcontroller.v1.RemoveLabware_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.RemoveLabware_Responses) {}
+  /* Sets the location of the given labware */
+  rpc SetLocation (sila2.tecan.fluent.silafluentcontroller.v1.SetLocation_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.SetLocation_Responses) {}
+  /* Starts a subroutine with the given name */
+  rpc Subroutine (sila2.tecan.fluent.silafluentcontroller.v1.Subroutine_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.Subroutine_Responses) {}
+  /* Transfers labware on the worktable with the RGA */
+  rpc TransferLabware (sila2.tecan.fluent.silafluentcontroller.v1.TransferLabware_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.TransferLabware_Responses) {}
+  /* Transfers the given labware back to its base */
+  rpc TransferLabwareBackToBase (sila2.tecan.fluent.silafluentcontroller.v1.TransferLabwareBackToBase_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.TransferLabwareBackToBase_Responses) {}
+  /* Executes a generic command */
+  rpc GenericCommand (sila2.tecan.fluent.silafluentcontroller.v1.GenericCommand_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.GenericCommand_Responses) {}
+  /* Gets the fingers of the gripper */
+  rpc GetFingers (sila2.tecan.fluent.silafluentcontroller.v1.GetFingers_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.GetFingers_Responses) {}
+  /* Drops the fingers to the provided docking station */
+  rpc DropFingers (sila2.tecan.fluent.silafluentcontroller.v1.DropFingers_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.DropFingers_Responses) {}
+  /* Shows a user prompt on TouchTools */
+  rpc UserPrompt (sila2.tecan.fluent.silafluentcontroller.v1.UserPrompt_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.UserPrompt_Responses) {}
+  /* Gets tips */
+  rpc GetTips (sila2.tecan.fluent.silafluentcontroller.v1.GetTips_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.GetTips_Responses) {}
+  /* Aspirates liquid */
+  rpc Aspirate (sila2.tecan.fluent.silafluentcontroller.v1.Aspirate_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.Aspirate_Responses) {}
+  /* Dispenses liquid */
+  rpc Dispense (sila2.tecan.fluent.silafluentcontroller.v1.Dispense_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.Dispense_Responses) {}
+  /* Drops the currently mounted disposable tips to the provided labware */
+  rpc DropTips (sila2.tecan.fluent.silafluentcontroller.v1.DropTips_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.DropTips_Responses) {}
+  /* Starts FluentControl or connect to an instance already running */
+  rpc StartFluentOrAttach (sila2.tecan.fluent.silafluentcontroller.v1.StartFluentOrAttach_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.StartFluentOrAttach_Responses) {}
+  /* Starts FluentControl and log in or connect to an instance already running */
+  rpc StartFluentAndLogin (sila2.tecan.fluent.silafluentcontroller.v1.StartFluentAndLogin_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.StartFluentAndLogin_Responses) {}
+  /* Starts FluentControl in simulation mode */
+  rpc StartFluentInSimulationMode (sila2.tecan.fluent.silafluentcontroller.v1.StartFluentInSimulationMode_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.StartFluentInSimulationMode_Responses) {}
+  /* Prepares the method for execution */
+  rpc PrepareMethod (sila2.tecan.fluent.silafluentcontroller.v1.PrepareMethod_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.PrepareMethod_Responses) {}
+  /* Runs the currently prepared method */
+  rpc RunMethod (sila2.tecan.fluent.silafluentcontroller.v1.RunMethod_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.RunMethod_Responses) {}
+  /* Pauses the currently run method */
+  rpc PauseRun (sila2.tecan.fluent.silafluentcontroller.v1.PauseRun_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.PauseRun_Responses) {}
+  /* Resumes method execution */
+  rpc ResumeRun (sila2.tecan.fluent.silafluentcontroller.v1.ResumeRun_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.ResumeRun_Responses) {}
+  /* Stops the method */
+  rpc StopMethod (sila2.tecan.fluent.silafluentcontroller.v1.StopMethod_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.StopMethod_Responses) {}
+  /* Finishes the execution of the current method */
+  rpc FinishExecution (sila2.tecan.fluent.silafluentcontroller.v1.FinishExecution_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.FinishExecution_Responses) {}
+  /* Closes the current method */
+  rpc CloseMethod (sila2.tecan.fluent.silafluentcontroller.v1.CloseMethod_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.CloseMethod_Responses) {}
+  /* Sets the value of the given variable */
+  rpc SetVariableValue (sila2.tecan.fluent.silafluentcontroller.v1.SetVariableValue_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.SetVariableValue_Responses) {}
+  /* Gets a collection of variable names for the current method */
+  rpc GetVariableNames (sila2.tecan.fluent.silafluentcontroller.v1.GetVariableNames_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.GetVariableNames_Responses) {}
+  /* Gets the value of the provided variable */
+  rpc GetVariableValue (sila2.tecan.fluent.silafluentcontroller.v1.GetVariableValue_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.GetVariableValue_Responses) {}
+  /* Gets a collection of runnable methods */
+  rpc GetAllRunnableMethods (sila2.tecan.fluent.silafluentcontroller.v1.GetAllRunnableMethods_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.GetAllRunnableMethods_Responses) {}
+  /* Shuts down FluentControl */
+  rpc Shutdown (sila2.tecan.fluent.silafluentcontroller.v1.Shutdown_Parameters) returns (sila2.tecan.fluent.silafluentcontroller.v1.Shutdown_Responses) {}
+}
+
+/* Parameters for AddLabware */
+message AddLabware_Parameters {
+  sila2.org.silastandard.String Barcode = 1;  /* the barcode of the labware */
+  sila2.org.silastandard.Boolean HasLid = 2;  /* True, if the labware has a lid */
+  sila2.org.silastandard.String LabwareName = 3;  /* the name of the labware */
+  sila2.org.silastandard.String LabwareType = 4;  /* the type of the labware */
+  sila2.org.silastandard.String TargetLocation = 5;  /* the location where the labware should be spawned */
+  sila2.org.silastandard.Integer Position = 6;  /* the position in the target location group */
+  sila2.org.silastandard.Integer Rotation = 7;  /* the rotation of the labware */
+}
+
+/* Responses of AddLabware */
+message AddLabware_Responses {
+}
+
+/* Parameters for RemoveLabware */
+message RemoveLabware_Parameters {
+  sila2.org.silastandard.String LabwareName = 1;  /* the name of the labware */
+}
+
+/* Responses of RemoveLabware */
+message RemoveLabware_Responses {
+}
+
+/* Parameters for SetLocation */
+message SetLocation_Parameters {
+  sila2.org.silastandard.String Labware = 1;  /* the name of the labware */
+  sila2.org.silastandard.Integer Rotation = 2;  /* the new rotation of the labware */
+  sila2.org.silastandard.String TargetLocation = 3;  /* the target location group name */
+  sila2.org.silastandard.Integer TargetSite = 4;  /* the target site */
+}
+
+/* Responses of SetLocation */
+message SetLocation_Responses {
+}
+
+/* Parameters for Subroutine */
+message Subroutine_Parameters {
+  sila2.org.silastandard.String SubroutineName = 1;  /* the name of the subroutine */
+}
+
+/* Responses of Subroutine */
+message Subroutine_Responses {
+}
+
+/* Parameters for TransferLabware */
+message TransferLabware_Parameters {
+  sila2.org.silastandard.String LabwareToLocation = 1;  /* the labware that should be moved */
+  sila2.org.silastandard.Boolean OnlyUseSelectedSite = 2;  /* True, if the instrument should only use the exact target position, otherwise False */
+  sila2.org.silastandard.String TargetLocation = 3;  /* the target location group */
+  sila2.org.silastandard.Integer TargetPosition = 4;  /* the target position */
+}
+
+/* Responses of TransferLabware */
+message TransferLabware_Responses {
+}
+
+/* Parameters for TransferLabwareBackToBase */
+message TransferLabwareBackToBase_Parameters {
+  sila2.org.silastandard.String LabwareName = 1;  /* the name of the labware */
+}
+
+/* Responses of TransferLabwareBackToBase */
+message TransferLabwareBackToBase_Responses {
+}
+
+/* Parameters for GenericCommand */
+message GenericCommand_Parameters {
+  sila2.org.silastandard.String Content = 1;  /* the XML representation of the command */
+}
+
+/* Responses of GenericCommand */
+message GenericCommand_Responses {
+}
+
+/* Parameters for GetFingers */
+message GetFingers_Parameters {
+  sila2.org.silastandard.String DeviceAlias = 1;  /* the alias of the RGA */
+  sila2.org.silastandard.String GripperFingers = 2;  /* the gripper fingers */
+}
+
+/* Responses of GetFingers */
+message GetFingers_Responses {
+}
+
+/* Parameters for DropFingers */
+message DropFingers_Parameters {
+  sila2.org.silastandard.String DeviceAlias = 1;  /* the alias of the RGA */
+  sila2.org.silastandard.String DockingStation = 2;  /* the docking station */
+}
+
+/* Responses of DropFingers */
+message DropFingers_Responses {
+}
+
+/* Parameters for UserPrompt */
+message UserPrompt_Parameters {
+  sila2.org.silastandard.String Text = 1;  /* the text to display to the user */
+}
+
+/* Responses of UserPrompt */
+message UserPrompt_Responses {
+}
+
+/* Parameters for GetTips */
+message GetTips_Parameters {
+  sila2.org.silastandard.Integer AirgapVolume = 1;  /* the airgap volume */
+  sila2.org.silastandard.Integer AirgapSpeed = 2;  /* the airgap speed */
+  sila2.org.silastandard.String DiTiType = 3;  /* the type of disposable tips */
+}
+
+/* Responses of GetTips */
+message GetTips_Responses {
+}
+
+/* Parameters for Aspirate */
+message Aspirate_Parameters {
+  sila2.org.silastandard.Integer Volume = 1;  /* the volume that should be aspirated */
+  sila2.org.silastandard.String Labware = 2;  /* the labware from which should be aspirated */
+  sila2.org.silastandard.String LiquidClass = 3;  /* the name of the liquid class used for aspiration */
+  sila2.org.silastandard.Integer WellOffset = 4;  /* the well offset */
+}
+
+/* Responses of Aspirate */
+message Aspirate_Responses {
+}
+
+/* Parameters for Dispense */
+message Dispense_Parameters {
+  sila2.org.silastandard.Integer Volume = 1;  /* the volume that should be dispensed */
+  sila2.org.silastandard.String Labware = 2;  /* the labware that should be dispensed into */
+  sila2.org.silastandard.String LiquidClass = 3;  /* the name of the liquid class used for dispensing */
+  sila2.org.silastandard.Integer WellOffset = 4;  /* the well offset */
+}
+
+/* Responses of Dispense */
+message Dispense_Responses {
+}
+
+/* Parameters for DropTips */
+message DropTips_Parameters {
+  sila2.org.silastandard.String Labware = 1;  /* the labware */
+}
+
+/* Responses of DropTips */
+message DropTips_Responses {
+}
+
+/* Parameters for StartFluentOrAttach */
+message StartFluentOrAttach_Parameters {
+}
+
+/* Responses of StartFluentOrAttach */
+message StartFluentOrAttach_Responses {
+}
+
+/* Parameters for StartFluentAndLogin */
+message StartFluentAndLogin_Parameters {
+  sila2.org.silastandard.String Username = 1;  /*  */
+  sila2.org.silastandard.String Password = 2;  /*  */
+}
+
+/* Responses of StartFluentAndLogin */
+message StartFluentAndLogin_Responses {
+}
+
+/* Parameters for StartFluentInSimulationMode */
+message StartFluentInSimulationMode_Parameters {
+}
+
+/* Responses of StartFluentInSimulationMode */
+message StartFluentInSimulationMode_Responses {
+}
+
+/* Parameters for PrepareMethod */
+message PrepareMethod_Parameters {
+  sila2.org.silastandard.String ToPrepare = 1;  /* the name of the method to prepare */
+}
+
+/* Responses of PrepareMethod */
+message PrepareMethod_Responses {
+}
+
+/* Parameters for RunMethod */
+message RunMethod_Parameters {
+}
+
+/* Responses of RunMethod */
+message RunMethod_Responses {
+}
+
+/* Parameters for PauseRun */
+message PauseRun_Parameters {
+}
+
+/* Responses of PauseRun */
+message PauseRun_Responses {
+}
+
+/* Parameters for ResumeRun */
+message ResumeRun_Parameters {
+}
+
+/* Responses of ResumeRun */
+message ResumeRun_Responses {
+}
+
+/* Parameters for StopMethod */
+message StopMethod_Parameters {
+}
+
+/* Responses of StopMethod */
+message StopMethod_Responses {
+}
+
+/* Parameters for FinishExecution */
+message FinishExecution_Parameters {
+}
+
+/* Responses of FinishExecution */
+message FinishExecution_Responses {
+}
+
+/* Parameters for CloseMethod */
+message CloseMethod_Parameters {
+}
+
+/* Responses of CloseMethod */
+message CloseMethod_Responses {
+}
+
+/* Parameters for SetVariableValue */
+message SetVariableValue_Parameters {
+  sila2.org.silastandard.String VariableName = 1;  /* the name of the variable */
+  sila2.org.silastandard.String Value = 2;  /* the new value of the variable */
+}
+
+/* Responses of SetVariableValue */
+message SetVariableValue_Responses {
+}
+
+/* Parameters for GetVariableNames */
+message GetVariableNames_Parameters {
+}
+
+/* Responses of GetVariableNames */
+message GetVariableNames_Responses {
+  repeated sila2.org.silastandard.String ReturnValue = 1;  /* A collection of variable names */
+}
+
+/* Parameters for GetVariableValue */
+message GetVariableValue_Parameters {
+  sila2.org.silastandard.String VariableName = 1;  /* the name of the variable */
+}
+
+/* Responses of GetVariableValue */
+message GetVariableValue_Responses {
+  sila2.org.silastandard.String ReturnValue = 1;  /* the current value of this variable */
+}
+
+/* Parameters for GetAllRunnableMethods */
+message GetAllRunnableMethods_Parameters {
+}
+
+/* Responses of GetAllRunnableMethods */
+message GetAllRunnableMethods_Responses {
+  repeated sila2.org.silastandard.String ReturnValue = 1;  /* a collection of runnable methods */
+}
+
+/* Parameters for Shutdown */
+message Shutdown_Parameters {
+  sila2.org.silastandard.Integer Timeout = 1;  /* a timeout in seconds */
+}
+
+/* Responses of Shutdown */
+message Shutdown_Responses {
+}

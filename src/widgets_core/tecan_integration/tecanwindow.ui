@@ -104,6 +104,7 @@
    <addaction name="actionLoad_External" />
    <addaction name="actionGenerate_GWL" />
    <addaction name="actionCreate_Plate_Map" />
+   <addaction name="actionRun_Fluent" />
   </widget>
   <action name="actionSave">
    <property name="icon">
@@ -151,6 +152,18 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionRun_Fluent">
+   <property name="icon">
+    <iconset resource="../../resources.qrc">
+     <normaloff>:/icons/resources/icons/play-button.png</normaloff>:/icons/resources/icons/play-button.png</iconset>
+   </property>
+   <property name="text">
+    <string>Run on Fluent</string>
+   </property>
+   <property name="toolTip">
+    <string>Launch Experiment on Remote Fluent</string>
    </property>
   </action>
  </widget>

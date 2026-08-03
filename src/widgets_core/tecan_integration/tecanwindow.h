@@ -49,6 +49,7 @@ private slots:
     void on_actionLoad_External_triggered();
     void on_actionGenerate_GWL_triggered();
     void on_actionCreate_Plate_Map_triggered();
+    void on_actionRun_Fluent_triggered();
 
     /** Checkable button below "Clear" – unchecked: 96-well, checked: 384-well. */
     void on_switchPlate_toggled(bool checked);

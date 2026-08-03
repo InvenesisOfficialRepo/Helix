@@ -30,11 +30,52 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS
     Core5Compat
 )
 
+# --- gRPC and Protobuf via FetchContent ---
+include(FetchContent)
+
+# Workaround for Qt Creator and Windows Git submodule clone failures
+# If we already successfully downloaded gRPC in a previous build directory (like build/release),
+# we tell CMake to just use that source directory instead of cloning it again.
+if(EXISTS "${CMAKE_SOURCE_DIR}/build/release/_deps/grpc-src")
+    set(FETCHCONTENT_SOURCE_DIR_GRPC "${CMAKE_SOURCE_DIR}/build/release/_deps/grpc-src" CACHE PATH "Use pre-downloaded gRPC source")
+endif()
+
+# We set some options to prevent gRPC from building its tests and unused components
+set(OPENSSL_NO_ASM ON CACHE BOOL "Disable assembly optimizations in BoringSSL to avoid NASM dependency" FORCE)
+set(gRPC_BUILD_TESTS OFF CACHE BOOL "Disable gRPC tests" FORCE)
+set(gRPC_INSTALL OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_CSHARP_EXT OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_CSHARP_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_NODE_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_PHP_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_PYTHON_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_RUBY_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_ZLIB_PROVIDER "module" CACHE STRING "" FORCE)
+set(gRPC_CARES_PROVIDER "module" CACHE STRING "" FORCE)
+set(gRPC_RE2_PROVIDER "module" CACHE STRING "" FORCE)
+set(gRPC_SSL_PROVIDER "module" CACHE STRING "" FORCE)
+set(gRPC_PROTOBUF_PROVIDER "module" CACHE STRING "" FORCE)
+set(gRPC_ABSL_PROVIDER "module" CACHE STRING "" FORCE)
+set(gRPC_WERROR OFF CACHE BOOL "" FORCE)
+set(protobuf_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(protobuf_WERROR OFF CACHE BOOL "" FORCE)
+set(ABSL_PROPAGATE_CXX_STD ON CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    grpc
+    GIT_REPOSITORY https://github.com/grpc/grpc
+    GIT_TAG        v1.54.3
+)
+FetchContent_MakeAvailable(grpc)
+
 qt_standard_project_setup()
 
 # Set up global include directories for legacy Widgets relative includes
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/qml_core)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-src/include)
 
 # Build QXlsx (vendored locally in third_party)
 add_subdirectory(third_party/QXlsx)
@@ -138,6 +179,10 @@ set(APP_SOURCES
 
     src/widgets_core/data_access/ExperimentDao.cpp
     src/widgets_core/data_access/ExperimentDao.h
+
+    # Hardware Integration - SiLA 2
+    src/widgets_core/hardware/FluentSilaClient.h
+    src/widgets_core/hardware/FluentSilaClient.cpp
     src/widgets_core/data_access/AuthenticationDao.cpp
     src/widgets_core/data_access/AuthenticationDao.h
     src/widgets_core/data_access/ItemDao.cpp
@@ -219,6 +264,22 @@ set(APP_SOURCES
 
     src/widgets_core/update_mangement/UpdateManager.cpp
     src/widgets_core/update_mangement/UpdateManager.h
+    
+    # LayoutMaker Integration
+    src/layout_maker/CsvParser.h
+    src/layout_maker/CsvParser.cpp
+    src/layout_maker/LayoutMakerWindow.h
+    src/layout_maker/LayoutMakerWindow.cpp
+    src/layout_maker/PlateModel.h
+    src/layout_maker/PlateModel.cpp
+    src/layout_maker/PlateViewWidget.h
+    src/layout_maker/PlateViewWidget.cpp
+    src/layout_maker/QuadrantDropWidget.h
+    src/layout_maker/QuadrantDropWidget.cpp
+    src/layout_maker/QuadrantMerger.h
+    src/layout_maker/QuadrantMerger.cpp
+    src/layout_maker/StyleHelper.h
+
     resources.rc
 )
 
@@ -237,7 +298,48 @@ target_include_directories(Helix PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/plate_management
     ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/tecan_integration
     ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/update_mangement
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/layout_maker
+    ${CMAKE_CURRENT_BINARY_DIR}/generated_proto
 )
+
+# Generate gRPC and Protobuf files
+set(SILA_PROTO_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/hardware/proto/SiLABinaryTransfer.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/hardware/proto/SiLAFramework.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/hardware/proto/SilaFluentController.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/hardware/proto/SilaFluentStatusProvider.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/hardware/proto/SimulationController.proto
+)
+
+# Setup proto generation directory
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated_proto)
+set(PROTO_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated_proto)
+
+foreach(proto ${SILA_PROTO_FILES})
+    get_filename_component(file_name ${proto} NAME_WE)
+    
+    set(generated_srcs
+        ${PROTO_GEN_DIR}/${file_name}.pb.cc
+        ${PROTO_GEN_DIR}/${file_name}.grpc.pb.cc
+    )
+    set(generated_hdrs
+        ${PROTO_GEN_DIR}/${file_name}.pb.h
+        ${PROTO_GEN_DIR}/${file_name}.grpc.pb.h
+    )
+
+    add_custom_command(
+        OUTPUT ${generated_srcs} ${generated_hdrs}
+        COMMAND protobuf::protoc
+        ARGS --grpc_out=${PROTO_GEN_DIR}
+             --cpp_out=${PROTO_GEN_DIR}
+             -I${CMAKE_CURRENT_SOURCE_DIR}/src/widgets_core/hardware/proto
+             --plugin=protoc-gen-grpc=$<TARGET_FILE:grpc_cpp_plugin>
+             ${proto}
+        DEPENDS ${proto}
+    )
+
+    target_sources(Helix PRIVATE ${generated_srcs} ${generated_hdrs})
+endforeach()
 
 # Set Qt policy to suppress QTP0004 warnings in QML modules
 if (POLICY QTP0004)
@@ -328,6 +430,9 @@ target_link_libraries(Helix PRIVATE
     Qt6::Core5Compat
     openwall_crypt
     QXlsx
+    grpc++
+    grpc++_reflection
+    libprotobuf
 )
 
 # Compile flags
@@ -338,3 +443,13 @@ set_target_properties(Helix PROPERTIES
     WIN32_EXECUTABLE TRUE 
     MACOSX_BUNDLE TRUE
 )
+
+# Auto-copy PostgreSQL DLLs to the output directory on Windows so the executable can load the database driver
+if(WIN32)
+    add_custom_command(TARGET Helix POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/resources/dlls"
+        "$<TARGET_FILE_DIR:Helix>"
+        COMMENT "Copying PostgreSQL database driver DLLs to output directory..."
+    )
+endif()

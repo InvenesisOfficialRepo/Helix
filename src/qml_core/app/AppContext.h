@@ -13,6 +13,7 @@
 
 class DbWorker;
 class MainWindow;
+class LayoutMakerWindow;
 #include "services/FeedingAnalysisProcessor.h"
 #include "ThemeManager.h"
 #include <QPointer>
@@ -37,6 +38,7 @@ public:
     ~AppContext() override;
 
     Q_INVOKABLE void launchWidgetsApp();
+    Q_INVOKABLE void launchLayoutMaker();
 
     SessionViewModel* session() const;
     DashboardViewModel* dashboard() const;
@@ -72,4 +74,5 @@ private:
     QString dbError_;
 
     QPointer<MainWindow> widgetsMainWindow_;
+    QPointer<LayoutMakerWindow> layoutMakerWindow_;
 };

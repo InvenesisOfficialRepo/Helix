@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+import "SiLAFramework.proto";
+
+package sila2.tecan.fluent.silafluentstatusprovider.v1;
+
+/* Denotes a status provider for FluentControl */
+service SilaFluentStatusProvider {
+  /* Gets the state of FluentControl */
+  rpc Subscribe_State (sila2.tecan.fluent.silafluentstatusprovider.v1.Subscribe_State_Parameters) returns (stream sila2.tecan.fluent.silafluentstatusprovider.v1.Subscribe_State_Responses) {}
+  /* Gets the value of the last progress update */
+  rpc Subscribe_Progress (sila2.tecan.fluent.silafluentstatusprovider.v1.Subscribe_Progress_Parameters) returns (stream sila2.tecan.fluent.silafluentstatusprovider.v1.Subscribe_Progress_Responses) {}
+  /* Gets the last error message */
+  rpc Subscribe_LastError (sila2.tecan.fluent.silafluentstatusprovider.v1.Subscribe_LastError_Parameters) returns (stream sila2.tecan.fluent.silafluentstatusprovider.v1.Subscribe_LastError_Responses) {}
+}
+
+/* Denotes the possible Fluent Control States */
+message DataType_FluentControlState {
+  sila2.org.silastandard.String FluentControlState = 1;  /* Denotes the possible Fluent Control States */
+}
+
+/* Parameters for State */
+message Subscribe_State_Parameters {
+}
+
+/* Responses of State */
+message Subscribe_State_Responses {
+  sila2.tecan.fluent.silafluentstatusprovider.v1.DataType_FluentControlState State = 1;  /* Gets the state of FluentControl */
+}
+
+/* Parameters for Progress */
+message Subscribe_Progress_Parameters {
+}
+
+/* Responses of Progress */
+message Subscribe_Progress_Responses {
+  sila2.org.silastandard.Integer Progress = 1;  /* Gets the value of the last progress update */
+}
+
+/* Parameters for LastError */
+message Subscribe_LastError_Parameters {
+}
+
+/* Responses of LastError */
+message Subscribe_LastError_Responses {
+  sila2.org.silastandard.String LastError = 1;  /* Gets the last error message */
+}

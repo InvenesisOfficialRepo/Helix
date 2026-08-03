@@ -39,6 +39,7 @@
 #include "standardselectiondialog.h"
 #include "ui/loadexperimentdialog.h"
 #include "services/ExperimentJsonSerializer.h"
+#include "hardware/FluentSilaClient.h"
 
 #include "services/JsonHelpers.h"
 
@@ -980,6 +981,7 @@ void TecanWindow::on_actionGenerate_GWL_triggered() {
 struct GwlGenResult {
   bool success = false;
   QString errorString;
+  QMap<QString, QString> silaVariables;
 };
 
 static GwlGenResult runBackgroundGwlGeneration(
@@ -1004,6 +1006,62 @@ static GwlGenResult runBackgroundGwlGeneration(
     qWarning() << "[WARN] generator.generateAuxiliary:" << err;
   }
 
+  QMap<QString, QString> vars;
+  
+  // Group matrix barcodes by daughter folder
+  // A matrix gwl file is at: dght_X/BARCODE.gwl, where BARCODE is not Reagent_distrib or serial_dilution
+  QMap<int, QSet<QString>> dghtMatrixBarcodes;
+  QSet<QString> globalMatrixBarcodes;
+
+  int maxDght = -1;
+  for (const auto& out : outs) {
+      if (out.relativePath.startsWith("dght_") && out.relativePath.endsWith(".gwl")) {
+          int slash = out.relativePath.indexOf('/');
+          if (slash != -1) {
+              QString dghtName = out.relativePath.left(slash);
+              int dghtIdx = dghtName.mid(5).toInt();
+              maxDght = qMax(maxDght, dghtIdx);
+              
+              QString fileName = out.relativePath.mid(slash + 1);
+              if (fileName != "Reagent_distrib.gwl" && fileName != "serial_dilution.gwl") {
+                  QString barcode = fileName.left(fileName.length() - 4); // remove .gwl
+                  dghtMatrixBarcodes[dghtIdx].insert(barcode);
+                  globalMatrixBarcodes.insert(barcode);
+              }
+          }
+      }
+  }
+
+  int NbDaughter = maxDght + 1;
+  int NbMatrix = globalMatrixBarcodes.size();
+  
+  QStringList matrixLoopCountsList;
+  
+  for (int i = 0; i < NbDaughter; ++i) {
+      auto barcodes = dghtMatrixBarcodes.value(i).values();
+      std::sort(barcodes.begin(), barcodes.end());
+      
+      matrixLoopCountsList.append(QString::number(barcodes.size()));
+      
+      // Generate expected_matrix_barcodes.txt for this daughter
+      GWLGenerator::FileOut dghtListOut;
+      dghtListOut.relativePath = QString("dght_%1/expected_matrix_barcodes.txt").arg(i);
+      dghtListOut.lines = barcodes;
+      outs.append(dghtListOut);
+  }
+
+  // Generate global expected_matrix_barcodes.txt
+  auto globalBarcodes = globalMatrixBarcodes.values();
+  std::sort(globalBarcodes.begin(), globalBarcodes.end());
+  GWLGenerator::FileOut globalListOut;
+  globalListOut.relativePath = "expected_matrix_barcodes.txt";
+  globalListOut.lines = globalBarcodes;
+  outs.append(globalListOut);
+
+  vars["NbDaughter"] = QString::number(NbDaughter);
+  vars["NbMatrix"] = QString::number(NbMatrix);
+  vars["MatrixLoopCounts"] = matrixLoopCountsList.join(",");
+
   if (!GWLGenerator::saveMany(outDir, outs, &err)) {
     result.success = false;
     result.errorString = QString("Failed to write files:\n%1").arg(err);
@@ -1011,6 +1069,7 @@ static GwlGenResult runBackgroundGwlGeneration(
   }
 
   result.success = true;
+  result.silaVariables = vars;
   return result;
 }
 
@@ -1257,4 +1316,214 @@ void TecanWindow::populateTestPlates(int dilutionSteps, const QString &testType,
   }
 }
 
+void TecanWindow::on_actionRun_Fluent_triggered()
+{
+    // 1. Feasibility & Unsaved Check
+    if (!checkFeasibility()) {
+        qDebug() << "[TRACE] Fluent run aborted because feasibility check failed.";
+        return;
+    }
 
+    if (m_viewModel->getLastSavedExperimentJson().isEmpty()) {
+        showWarning(this, tr("Not Saved"), tr("You must save the experiment before running it on Fluent."));
+        on_actionSave_triggered();
+        return;
+    }
+
+    // 2. Build current JSON
+    const QString code = m_viewModel->getLastSavedExperimentJson()["experiment_code"].toString();
+    const QString user = m_viewModel->getLastSavedExperimentJson()["user"].toString();
+    QList<DaughterPlateWidget*> daughterPlatesList;
+    for (int i = 0; i < daughterPlatesLayout->count(); ++i) {
+        daughterPlatesList.append(qobject_cast<DaughterPlateWidget*>(daughterPlatesLayout->itemAt(i)->widget()));
+    }
+    QList<DaughterPlateWidget*> testPlatesList;
+    for (int i = 0; i < testPlatesLayout->count(); ++i) {
+        testPlatesList.append(qobject_cast<DaughterPlateWidget*>(testPlatesLayout->itemAt(i)->widget()));
+    }
+    QList<DaughterPlateWidget*> qcPlatesList;
+    for (int i = 0; i < qcPlatesLayout->count(); ++i) {
+        qcPlatesList.append(qobject_cast<DaughterPlateWidget*>(qcPlatesLayout->itemAt(i)->widget()));
+    }
+
+    QJsonObject currentJson = ExperimentJsonSerializer::buildExperimentJson(
+        code, user,
+        ui->testRequestTableView->model(),
+        ui->compoundQueryTableView->model(),
+        matrixPlateContainer->getPlateMap(),
+        daughterPlatesList, testPlatesList, qcPlatesList,
+        (m_viewModel->getDaughterPlateType() == ExperimentJsonSerializer::DaughterPlateType::Plate384) ? ExperimentJsonSerializer::DaughterPlateType::Plate384 : ExperimentJsonSerializer::DaughterPlateType::Plate96,
+        qcSelectionCombo ? qcSelectionCombo->currentText() : QString()
+    );
+    currentJson["standard"] = m_viewModel->getLastSavedExperimentJson()["standard"];
+
+    // 3. Confirm if unsaved changes exist
+    if (!JsonHelpers::jsonEqual(m_viewModel->getLastSavedExperimentJson(), currentJson)) {
+        const auto choice = QMessageBox::question(
+            this, tr("Experiment Modified"),
+            tr("Changes have been made since last save.\nDo you want to overwrite the saved experiment?"),
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        if (choice == QMessageBox::Cancel) return;
+        if (choice == QMessageBox::Yes) {
+            on_actionSave_triggered();
+            return;
+        }
+        // If No, continue with currentJson
+    } else {
+        currentJson = m_viewModel->getLastSavedExperimentJson();
+    }
+
+    // 4. Show GWL Settings dialog
+    GenerateGwlDialog dlg(this);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    
+    currentJson["_instrument"] = instrumentToString(GWLGenerator::Instrument::FLUENT1080);
+    currentJson["_tip_size"] = dlg.selectedTipSize();
+    currentJson["_optimize_gwl"] = dlg.optimizeGwl();
+    currentJson["_override_min_vol"] = dlg.overrideMinVolume();
+    ExperimentJsonSerializer::addConcentrationsToExperimentJson(currentJson, m_viewModel->getQcPlatesJson());
+
+    // 5. Ask for IP Address
+    bool ok;
+    QString ipAddress = QInputDialog::getText(this, tr("Instrument IP"),
+                                         tr("Enter the IP Address of the Fluent Instrument (with port):"), QLineEdit::Normal,
+                                         "10.0.0.18:50052", &ok);
+    if (!ok || ipAddress.isEmpty()) return;
+
+    QString runId = currentJson.value("RunID").toString();
+    if (runId.isEmpty()) {
+        runId = currentJson.value("experiment_code").toString(); // fallback
+    }
+
+    // Prepare variables for generation
+    double dilutionFactor = 3.16;
+    const QJsonArray trArr = currentJson.value("test_requests").toArray();
+    QString testId;
+    if (!trArr.isEmpty()) {
+        const auto tr0 = trArr.at(0).toObject();
+        bool ok2 = false;
+        const double df = tr0.value("dilution_steps").toString().toDouble(&ok2);
+        if (ok2 && df > 0.0) dilutionFactor = df;
+        testId = tr0.value("requested_tests").toString();
+    }
+
+    double stockConcMicroM = 0.0;
+    const QJsonArray cmpArr = currentJson.value("compounds").toArray();
+    if (!cmpArr.isEmpty()) {
+        const auto cmp0 = cmpArr.at(0).toObject();
+        stockConcMicroM = GWLHelpers::convertToMicroM(
+            cmp0.value("concentration").toDouble(),
+            cmp0.value("concentration_unit").toString()
+        );
+    }
+    
+    QString qcPlateType = currentJson.value("qc_plate_type").toString();
+    QString is96 = "0";
+    QString isMTA = "0";
+    
+    // Test-ID -> plate-format catalogue logic (same as CheckRequestedTestScript.vb)
+    QMap<QString, QString> plateFormat = {
+        {"INV-T-001", "96"}, {"INV-T-004", "96"}, {"INV-T-005", "384"}, {"INV-T-006", "384"},
+        {"INV-T-009", "96"}, {"INV-T-010", "96"}, {"INV-T-011", "96"}, {"INV-T-012", "96"},
+        {"INV-T-015", "96"}, {"INV-T-016", "96"}, {"INV-T-017", "96"}, {"INV-T-018", "96"},
+        {"INV-T-019", "96"}, {"INV-T-020", "96"}, {"INV-T-021", "96"}, {"INV-T-022", "96"},
+        {"INV-T-025", "96"}, {"INV-T-027", "96"}, {"INV-T-028", "96"}, {"INV-T-029", "96"},
+        {"INV-T-031", "96"}, {"INV-T-032", "96"}, {"INV-T-041", "96"}, {"INV-T-042", "96"},
+        {"INV-T-044", "384"}, {"INV-T-045", "384"}, {"INV-T-047", "384"}, {"INV-T-049", "384"}
+    };
+    
+    if (plateFormat.value(testId.toUpper()) == "96") is96 = "1";
+    if (testId.toUpper() == "INV-T-031") isMTA = "1";
+
+    // 6. Set output folder to the network drive automatically
+    QString outDir = QString("//Inv_syno_srv/INVENesis/Evo_pc/Fluent/Experiments/%1").arg(runId);
+
+    QProgressDialog* progress = new QProgressDialog(tr("Generating files and connecting to Fluent..."), QString(), 0, 0, this);
+    progress->setWindowModality(Qt::WindowModal);
+    progress->setRange(0, 0); // Indeterminate
+    progress->setWindowFlags(progress->windowFlags() & ~Qt::WindowCloseButtonHint);
+    progress->show();
+
+    // Run GWL generation and SiLA setup in a background thread
+    auto *watcher = new QFutureWatcher<bool>(this);
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [this, watcher, progress]() {
+        progress->close();
+        progress->deleteLater();
+        if (watcher->result()) {
+            showInfo(this, "Success", "Experiment started successfully on the Fluent!");
+        } else {
+            showError(this, "Error", "Experiment failed to run. Check the log file for details.");
+        }
+        watcher->deleteLater();
+    });
+
+    QFuture<bool> future = QtConcurrent::run([this, experimentJson = currentJson, dilutionFactor, testId, stockConcMicroM, outDir, runId, ipAddress, qcPlateType, is96, isMTA, progress]() -> bool {
+        // A. Generate GWL Files
+        GwlGenResult genResult = runBackgroundGwlGeneration(
+            experimentJson, dilutionFactor, testId, stockConcMicroM, GWLGenerator::Instrument::FLUENT1080, outDir
+        );
+        
+        if (!genResult.success) {
+            QMetaObject::invokeMethod(this, [this, err = genResult.errorString]() {
+                showError(this, "GWL Generation Error", err);
+            });
+            return false;
+        }
+
+        // B. Connect to SiLA and push variables
+        QString errorOut;
+        FluentSilaClient client(ipAddress);
+        
+        QObject::connect(&client, &FluentSilaClient::stateChanged, progress, [progress](const QString& state) {
+            QMetaObject::invokeMethod(progress, [progress, state]() {
+                progress->setLabelText(QString("Running Experiment on Fluent...\nState: %1").arg(state));
+            });
+        }, Qt::QueuedConnection);
+
+        if (!client.startFluentOrAttach(errorOut)) {
+            QMetaObject::invokeMethod(this, [this, errorOut]() {
+                showError(this, "Fluent Connection", "Failed to connect to Fluent: " + errorOut);
+            });
+            return false;
+        }
+
+        // Combine computed variables
+        QMap<QString, QString> vars = genResult.silaVariables;
+        vars["RootPath"] = outDir;
+        vars["Experiment"] = runId;
+        vars["RequestedTest"] = testId;
+        vars["QC_Plate_Type"] = qcPlateType;
+        vars["is96"] = is96;
+        vars["isMTA"] = isMTA;
+        vars["Project"] = experimentJson.value("project_code").toString();
+
+        // Write variables to static JSON file for FluentControl VBScript to read
+        QJsonObject paramsObj;
+        for (auto it = vars.constBegin(); it != vars.constEnd(); ++it) {
+            paramsObj[it.key()] = it.value();
+        }
+        
+        QFile paramsFile("//Inv_syno_srv/INVENesis/Evo_pc/Fluent/Experiments/HelixExperimentConfig.json");
+        if (paramsFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            paramsFile.write(QJsonDocument(paramsObj).toJson());
+            paramsFile.close();
+            qDebug() << "Successfully wrote run parameters to //Inv_syno_srv/INVENesis/Evo_pc/Fluent/Experiments/HelixExperimentConfig.json";
+        } else {
+            qWarning() << "Failed to write HelixExperimentConfig.json to Experiments root path!";
+        }
+
+        // Run the script (variables will be pushed after method preparation)
+        if (!client.experimentFromHelix(runId, vars, errorOut)) {
+            QMetaObject::invokeMethod(this, [this, errorOut]() {
+                showError(this, "Fluent Run Error", "ExperimentFromHelix failed:\n" + errorOut);
+            });
+            return false;
+        }
+
+        return true;
+    });
+
+    watcher->setFuture(future);
+}

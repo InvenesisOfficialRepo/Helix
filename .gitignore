@@ -34,3 +34,14 @@ invenesis_merge_app.log
 *~
 *.bak
 *.tmp
+*.xml.txt
+temp_*.txt
+
+# AI agent local settings
+.agent/
+.gemini/
+
+# Third-party local clones
+third_party/fluent-sila2-connector/
+third_party/test_grpc/
+vcpkg-overlays/

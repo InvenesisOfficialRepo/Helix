@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.2.3",
-  "release_notes": "<h3>Helix 1.2.3</h3><ul><li>Added the new LayoutMaker module to Helix as an integrated app.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.3/Helix_Setup.exe",
-  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.3/Helix.dmg"
+  "latest_version": "1.2.4",
+  "release_notes": "<h3>Helix 1.2.4</h3><ul><li>Integrated SiLA 2 automation client for Tecan Fluent.</li><li>Added automated experiment config export for Fluent Control execution.</li><li>Integrated LayoutMaker module into Helix.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.4/Helix_Setup.exe",
+  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.4/Helix.dmg"
 }
