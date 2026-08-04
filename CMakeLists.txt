@@ -345,8 +345,8 @@ foreach(proto ${SILA_PROTO_FILES})
 endforeach()
 
 # Set Qt policy to suppress QTP0004 warnings in QML modules
-if (POLICY QTP0004)
-    qt_policy(SET QTP0004 NEW)
+if (COMMAND qt_policy)
+    qt_policy(SET QTP0004 OLD)
 endif()
 
 # Define QML Singletons

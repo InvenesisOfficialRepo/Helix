@@ -75,7 +75,7 @@ jobs:
       # 8. Configure with CMake
       - name: Configure CMake
         run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 
       # 9. Build the Helix.exe binary
       - name: Build Application
