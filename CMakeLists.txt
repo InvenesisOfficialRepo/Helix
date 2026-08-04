@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 
+# Ensure compatibility with older submodules (such as c-ares inside gRPC)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "Compatibility with older subprojects" FORCE)
+
 project(Helix LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
