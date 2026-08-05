@@ -17,12 +17,16 @@ AppContext::AppContext(QObject *parent)
     project_ = new ProjectViewModel(this);
     calendar_ = new CalendarViewModel(this);
     datapointManager_ = new DatapointManagerViewModel(this);
+    tecanPlanner_ = new TecanPlannerViewModel(this);
     feeding_ = new FeedingAnalysisProcessor(this);
 
     // ---------------- Phase 1 wiring (keep) ----------------
     connect(session_, &SessionViewModel::isAuthenticatedChanged, this, [this] {
-        if (session_->isAuthenticated())
+        if (session_->isAuthenticated()) {
             dashboard_->refresh();
+            tecanPlanner_->refreshTodaySummary();
+            tecanPlanner_->reload();
+        }
     });
 
     connect(dashboard_, &DashboardViewModel::openBatchRequested,
@@ -48,6 +52,9 @@ AppContext::AppContext(QObject *parent)
 
     //Phase 5:
     calendar_->setDbWorker(worker_);
+
+    //Phase 6: Tecan Planner
+    tecanPlanner_->setDbWorker(worker_);
 
     connect(&workerThread_, &QThread::started, worker_, &DbWorker::onThreadStarted);
 
@@ -97,10 +104,12 @@ AppContext::AppContext(QObject *parent)
                 if (compoundsUpdated <= 0 && batchesUpdated <= 0)
                     return; // nothing changed
 
-                // Refresh dashboard + calendar marks/events
+                // Refresh dashboard + calendar marks/events + tecan planner
                 dashboard_->refresh();
                 calendar_->refreshVisibleMonth();
                 calendar_->reloadForSelectedDate();
+                tecanPlanner_->refreshTodaySummary();
+                tecanPlanner_->reload();
             },
             Qt::QueuedConnection);
 
@@ -146,6 +155,7 @@ DashboardViewModel* AppContext::dashboard() const { return dashboard_; }
 ProjectViewModel* AppContext::project() const { return project_; }
 CalendarViewModel* AppContext::calendar() const { return calendar_; }
 DatapointManagerViewModel* AppContext::datapointManager() const { return datapointManager_; }
+TecanPlannerViewModel* AppContext::tecanPlanner() const { return tecanPlanner_; }
 ThemeManager* AppContext::theme() const { return ThemeManager::instance(); }
 FeedingAnalysisProcessor* AppContext::feedingProcessor() const { return feeding_; }
 
@@ -186,4 +196,20 @@ void AppContext::launchLayoutMaker()
     layoutMakerWindow_ = new LayoutMakerWindow();
     layoutMakerWindow_->setAttribute(Qt::WA_DeleteOnClose);
     layoutMakerWindow_->show();
+}
+
+void AppContext::launchTecanWithRequests(const QStringList& requestIds)
+{
+    if (widgetsMainWindow_) {
+        widgetsMainWindow_->raise();
+        widgetsMainWindow_->activateWindow();
+        widgetsMainWindow_->openTecanViewWithRequests(requestIds);
+        return;
+    }
+
+    QString role = session_ ? session_->role() : QString();
+    widgetsMainWindow_ = new MainWindow(role);
+    widgetsMainWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    widgetsMainWindow_->show();
+    widgetsMainWindow_->openTecanViewWithRequests(requestIds);
 }

@@ -561,6 +561,20 @@ void MainWindow::on_actionTecan_triggered()
     mainStackedWidget->setCurrentIndex(1);
 }
 
+void MainWindow::openTecanViewWithRequests(const QStringList &requestIds)
+{
+    if (!requestIds.isEmpty() && tecanView) {
+        tecanView->loadTestRequests(requestIds);
+    }
+
+    if (ui && ui->toolBar) {
+        ui->toolBar->hide();
+    }
+    if (mainStackedWidget) {
+        mainStackedWidget->setCurrentIndex(1);
+    }
+}
+
 
 
 void MainWindow::on_actionUpdate_triggered()

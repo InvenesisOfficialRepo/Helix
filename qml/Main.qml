@@ -64,6 +64,19 @@ ApplicationWindow {
     property var dashboardWindowInstance: null
     property var standaloneWindowInstance: null
     property var datapointManagerWindowInstance: null
+    property var tecanPlannerWindowInstance: null
+
+    function launchTecanPlannerWindow() {
+        if (tecanPlannerWindowInstance === null) {
+            tecanPlannerWindowInstance = tecanPlannerWindowComponent.createObject(null)
+            tecanPlannerWindowInstance.closing.connect(function() {
+                tecanPlannerWindowInstance = null
+            })
+        }
+        tecanPlannerWindowInstance.show()
+        tecanPlannerWindowInstance.raise()
+        tecanPlannerWindowInstance.requestActivate()
+    }
 
     function launchDashboardWindow() {
         if (dashboardWindowInstance === null) {
@@ -194,6 +207,31 @@ ApplicationWindow {
                 id: stack
                 anchors.fill: parent
                 initialItem: "pages/DatapointManagerPage.qml"
+            }
+        }
+    }
+
+    Component {
+        id: tecanPlannerWindowComponent
+        ApplicationWindow {
+            id: tecanWin
+            width: 1400
+            height: 900
+            visible: false
+            title: "Daily Tecan Planner"
+
+            Material.theme: Style.isDark ? Material.Dark : Material.Light
+            Material.accent: Style.accent
+            Material.primary: Style.accent2
+
+            color: Style.bg
+
+            property alias appStack: stack
+
+            StackView {
+                id: stack
+                anchors.fill: parent
+                initialItem: "pages/DailyTecanPlannerPage.qml"
             }
         }
     }

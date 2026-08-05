@@ -30,6 +30,8 @@ public:
     explicit MainWindow(const QString &preAuthRole = QString(), QWidget *parent = nullptr);
     ~MainWindow();
 
+    void openTecanViewWithRequests(const QStringList &requestIds);
+
 private:
     Ui::MainWindow *ui;
     std::unique_ptr<MainWindowViewModel> viewModel;

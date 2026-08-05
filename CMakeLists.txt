@@ -133,6 +133,8 @@ set(APP_SOURCES
     src/qml_core/viewmodels/DatapointManagerViewModel.cpp
     src/qml_core/viewmodels/CalendarViewModel.h
     src/qml_core/viewmodels/CalendarViewModel.cpp
+    src/qml_core/viewmodels/TecanPlannerViewModel.h
+    src/qml_core/viewmodels/TecanPlannerViewModel.cpp
     src/qml_core/db/DatabaseManager.h
     src/qml_core/db/DatabaseManager.cpp
     src/qml_core/db/DbWorker.h
@@ -142,8 +144,11 @@ set(APP_SOURCES
     src/qml_core/auth/AuthRepository.h
     src/qml_core/auth/AuthRepository.cpp
     src/qml_core/domain/DashboardDtos.h
+    src/qml_core/domain/TecanPlannerDtos.h
     src/qml_core/repositories/DashboardRepository.h
     src/qml_core/repositories/DashboardRepository.cpp
+    src/qml_core/repositories/TecanPlannerRepository.h
+    src/qml_core/repositories/TecanPlannerRepository.cpp
     src/qml_core/domain/ClientDtos.h
     src/qml_core/repositories/ClientRepository.h
     src/qml_core/repositories/ClientRepository.cpp
@@ -363,6 +368,7 @@ qt_add_qml_module(Helix
 
         qml/pages/LoginPage.qml
         qml/pages/MasterLauncherHub.qml
+        qml/pages/DailyTecanPlannerPage.qml
         qml/pages/DashboardPage.qml
         qml/pages/ProjectDetailPage.qml
         qml/pages/CalendarPage.qml

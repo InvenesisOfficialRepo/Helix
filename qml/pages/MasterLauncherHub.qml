@@ -149,7 +149,119 @@ Page {
                 x: 20
                 spacing: Style.padXl
 
-            // Card 1: Screening Database Manager (Widgets App)
+            // Card 1: Daily Tecan Planner (Workstation App)
+            Frame {
+                id: cardTecanPlanner
+                Layout.preferredWidth: 380
+                Layout.preferredHeight: 320
+                padding: Style.padLg
+
+                scale: mouseTecanPlanner.containsMouse ? 1.03 : 1.0
+                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+                background: Rectangle {
+                    radius: Style.radiusLg
+                    color: Style.panel
+                    border.color: mouseTecanPlanner.containsMouse ? Style.accent : Style.border
+                    border.width: mouseTecanPlanner.containsMouse ? 2 : Style.borderWidth
+
+                    // Glassmorphism subtle glow
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: "transparent"
+                        border.color: Qt.rgba(Style.accent.r, Style.accent.g, Style.accent.b, 0.2)
+                        border.width: 1
+                        visible: mouseTecanPlanner.containsMouse
+                    }
+                }
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: Style.pad
+
+                    // Card header
+                    RowLayout {
+                        spacing: Style.pad
+
+                        Label {
+                            text: "biotech"
+                            font.family: Style.iconFontFamily
+                            font.pixelSize: Style.fontXxl + 6
+                            color: Style.accent
+                        }
+
+                        ColumnLayout {
+                            spacing: 2
+                            Label {
+                                text: "Daily Tecan Planner"
+                                font.family: Style.fontPrimaryBold
+                                font.pixelSize: Style.fontLg
+                                color: Style.text
+                            }
+                            Label {
+                                text: "Batch scheduler & preparation"
+                                font.family: Style.fontSecondary
+                                font.pixelSize: Style.fontXs
+                                color: Style.subText
+                            }
+                        }
+                    }
+
+                    // Card Body
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        text: "Automated daily test batching grouped strictly by assay code, solvent, and species. Inspect scheduled runs, review compound queues, and directly launch the Tecan workstation for seamless pipetting."
+                        wrapMode: Text.Wrap
+                        color: Style.subText
+                        font.family: Style.fontSecondary
+                        font.pixelSize: Style.fontSm + 1
+                        lineHeight: 1.25
+                    }
+
+                    // Tech Tags
+                    RowLayout {
+                        spacing: Style.padXs
+                        Layout.fillWidth: true
+
+                        Repeater {
+                            model: ["Assay Batches", "1-Click Tecan", "Zero Errors", "Live Queue"]
+                            Rectangle {
+                                color: Qt.rgba(Style.accent2.r, Style.accent2.g, Style.accent2.b, 0.15)
+                                border.color: Style.border
+                                radius: 4
+                                implicitWidth: tagText0.implicitWidth + 12
+                                implicitHeight: tagText0.implicitHeight + 6
+
+                                Label {
+                                    id: tagText0
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    font.family: Style.fontSecondary
+                                    font.pixelSize: Style.fontXs - 1
+                                    color: Style.text
+                                }
+                            }
+                        }
+                    }
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: "Open Tecan Planner"
+                        onClicked: win.launchTecanPlannerWindow()
+                    }
+                }
+
+                MouseArea {
+                    id: mouseTecanPlanner
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: win.launchTecanPlannerWindow()
+                }
+            }
+
+            // Card 2: Screening Database Manager (Widgets App)
             Frame {
                 id: cardWidgets
                 Layout.preferredWidth: 380

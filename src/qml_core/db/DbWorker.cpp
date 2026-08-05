@@ -12,6 +12,7 @@
 #include "domain/BatchDetailDtos.h"
 
 #include "repositories/CalendarRepository.h"
+#include "repositories/TecanPlannerRepository.h"
 
 #include "repositories/DoneSyncRepository.h"
 
@@ -43,6 +44,12 @@ static const int _batchDetailMetaTypes = []() -> int {
 static const int _calendarMeta = []() -> int {
     qRegisterMetaType<QVector<CalendarEventItem>>("QVector<CalendarEventItem>");
     qRegisterMetaType<QVariantMap>("QVariantMap");
+    return 0;
+}();
+
+static const int _tecanPlannerMeta = []() -> int {
+    qRegisterMetaType<TecanAssayBatchDto>("TecanAssayBatchDto");
+    qRegisterMetaType<QVector<TecanAssayBatchDto>>("QVector<TecanAssayBatchDto>");
     return 0;
 }();
 
@@ -225,6 +232,55 @@ void DbWorker::requestCalendarDayEvents(const QDate& day)
     emit calendarDayEventsReady(items);
 }
 
+void DbWorker::requestTecanPlannerBatches(const QDate& date)
+{
+    if (!ready_) {
+        emit tecanPlannerBatchesFailed(lastError_.isEmpty() ? "Database not ready." : lastError_);
+        return;
+    }
+
+    QSqlDatabase db = DatabaseManager::db(connectionName_);
+    if (!db.isValid() || !db.isOpen()) {
+        emit tecanPlannerBatchesFailed("Database connection is not open.");
+        return;
+    }
+
+    TecanPlannerRepository repo(db);
+    QString err;
+    const auto items = repo.loadDailyAssayBatches(date, &err);
+    if (!err.isEmpty()) {
+        emit tecanPlannerBatchesFailed(err);
+        return;
+    }
+
+    emit tecanPlannerBatchesReady(items);
+}
+
+void DbWorker::requestTecanPlannerSummary(const QDate& today)
+{
+    if (!ready_) {
+        emit tecanPlannerSummaryFailed(lastError_.isEmpty() ? "Database not ready." : lastError_);
+        return;
+    }
+
+    QSqlDatabase db = DatabaseManager::db(connectionName_);
+    if (!db.isValid() || !db.isOpen()) {
+        emit tecanPlannerSummaryFailed("Database connection is not open.");
+        return;
+    }
+
+    TecanPlannerRepository repo(db);
+    QString err;
+    int batchCount = 0;
+    int compoundCount = 0;
+    repo.loadDateSummary(today, &batchCount, &compoundCount, &err);
+    if (!err.isEmpty()) {
+        emit tecanPlannerSummaryFailed(err);
+        return;
+    }
+
+    emit tecanPlannerSummaryReady(batchCount, compoundCount);
+}
 
 void DbWorker::syncDoneStatuses()
 {

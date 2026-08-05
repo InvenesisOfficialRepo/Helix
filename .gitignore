@@ -1,6 +1,7 @@
 # Windows build directories
 build/
 build-*/
+build_*/
 dist/
 x64/
 Debug/

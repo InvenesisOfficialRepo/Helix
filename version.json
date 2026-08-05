@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.2.4",
-  "release_notes": "<h3>Helix 1.2.4</h3><ul><li>Integrated SiLA 2 automation client for Tecan Fluent.</li><li>Added automated experiment config export for Fluent Control execution.</li><li>Integrated LayoutMaker module into Helix.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.4/Helix_Setup.exe",
-  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.4/Helix.dmg"
+  "latest_version": "1.2.5",
+  "release_notes": "<h3>Helix 1.2.5</h3><ul><li>Added Daily Tecan Planner for automatic robotic assay batch grouping by assay code, solvent, and species.</li><li>Direct TecanWindow execution workflow from scheduled daily requests.</li><li>Fixed UI layout, date picker handling, and button aesthetics across the workstation.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.5/Helix_Setup.exe",
+  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.5/Helix.dmg"
 }

@@ -10,6 +10,7 @@
 
 #include <QVariantMap>
 #include "models/CalendarEventsModel.h"
+#include "domain/TecanPlannerDtos.h"
 
 class DbWorker : public QObject
 {
@@ -29,6 +30,8 @@ public slots:
     void sendSelectedCompounds(const QString& batchId, const QStringList& compoundIds, const QDate& date);
     void requestCalendarMonthSummary(int year, int month0); // 0=Jan..11=Dec
     void requestCalendarDayEvents(const QDate& day);
+    void requestTecanPlannerBatches(const QDate& date);
+    void requestTecanPlannerSummary(const QDate& today);
     void syncDoneStatuses();
     void importExcel(const QString& filePath, const QString& createdByUser);
     void publishReports(const QString& batchId, const QString& pdfPath, const QString& htmlPath);
@@ -64,6 +67,12 @@ signals:
 
     void calendarDayEventsReady(const QVector<CalendarEventItem>& items);
     void calendarDayEventsFailed(const QString& error);
+
+    void tecanPlannerBatchesReady(const QVector<TecanAssayBatchDto>& items);
+    void tecanPlannerBatchesFailed(const QString& error);
+
+    void tecanPlannerSummaryReady(int batchCount, int compoundCount);
+    void tecanPlannerSummaryFailed(const QString& error);
 
     void syncDoneStatusesDone(int compoundsUpdated, int batchesUpdated);
     void syncDoneStatusesFailed(const QString& error);
