@@ -67,40 +67,80 @@ jobs:
       # 9. Deploy Qt dependencies and fix code signature
       - name: Deploy and Sign
         run: |
-          export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
-          brew install dylibbundler
-          
-          # macdeployqt bundles the Qt libraries, QML modules, and SQL drivers
+          # 1. Run macdeployqt to bundle Qt frameworks, QML modules, and plugins
           macdeployqt build/Helix.app -qmldir=qml -always-overwrite
           
-          # Remove unused plugins that reference nonexistent libraries (like ODBC / iODBC)
+          # 2. Clean up unused database plugins
           rm -f build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlodbc.dylib
+          rm -f build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlmimer.dylib
           
-          # Point libqsqlpsql.dylib to the Homebrew libpq installation if needed
-          LIBPQ_PATH="$(brew --prefix libpq)/lib/libpq.5.dylib"
-          if [ -f "build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib" ]; then
-            chmod +w build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib
-            OLD_LIBPQ=$(otool -L build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib | grep -E 'libpq\.[0-9]+\.dylib' | awk '{print $1}' || true)
-            if [ -n "$OLD_LIBPQ" ] && [ "$OLD_LIBPQ" != "$LIBPQ_PATH" ]; then
-              echo "Fixing libqsqlpsql libpq link from $OLD_LIBPQ to $LIBPQ_PATH"
-              install_name_tool -change "$OLD_LIBPQ" "$LIBPQ_PATH" build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib
-            fi
+          # 3. Bundle libpq and all its Homebrew dependencies into Contents/Frameworks
+          FRAMEWORKS_DIR="build/Helix.app/Contents/Frameworks"
+          mkdir -p "$FRAMEWORKS_DIR"
+          
+          LIBPQ_SOURCE="$(brew --prefix libpq)/lib/libpq.5.dylib"
+          echo "Copying libpq from $LIBPQ_SOURCE to $FRAMEWORKS_DIR"
+          cp -L "$LIBPQ_SOURCE" "$FRAMEWORKS_DIR/libpq.5.dylib"
+          chmod 755 "$FRAMEWORKS_DIR/libpq.5.dylib"
+          install_name_tool -id "@rpath/libpq.5.dylib" "$FRAMEWORKS_DIR/libpq.5.dylib"
+          
+          # Helper function to recursively find and bundle all Homebrew dependencies
+          bundle_deps() {
+            local file="$1"
+            for dep in $(otool -L "$file" | awk '{print $1}' | grep -E '^(/opt/homebrew|/usr/local)' | sort -u); do
+              local dep_name=$(basename "$dep")
+              if [ ! -f "$FRAMEWORKS_DIR/$dep_name" ]; then
+                echo "Bundling dependency: $dep -> $FRAMEWORKS_DIR/$dep_name"
+                cp -L "$dep" "$FRAMEWORKS_DIR/$dep_name"
+                chmod 755 "$FRAMEWORKS_DIR/$dep_name"
+                install_name_tool -id "@rpath/$dep_name" "$FRAMEWORKS_DIR/$dep_name" 2>/dev/null || true
+                bundle_deps "$FRAMEWORKS_DIR/$dep_name"
+              fi
+              install_name_tool -change "$dep" "@rpath/$dep_name" "$file" 2>/dev/null || true
+            done
+          }
+          
+          bundle_deps "$FRAMEWORKS_DIR/libpq.5.dylib"
+          
+          # Fix internal cross-references among all bundled dylibs in Frameworks
+          for dylib in "$FRAMEWORKS_DIR"/*.dylib; do
+            [ -f "$dylib" ] || continue
+            for dep in $(otool -L "$dylib" | awk '{print $1}' | grep -E '^(/opt/homebrew|/usr/local)' | sort -u); do
+              local dep_name=$(basename "$dep")
+              install_name_tool -change "$dep" "@rpath/$dep_name" "$dylib" 2>/dev/null || true
+            done
+          done
+          
+          # 4. Rewire Qt PostgreSQL driver (libqsqlpsql.dylib)
+          PSQL_PLUGIN="build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib"
+          if [ -f "$PSQL_PLUGIN" ]; then
+            chmod +w "$PSQL_PLUGIN"
+            install_name_tool -add_rpath "@loader_path/../../Frameworks" "$PSQL_PLUGIN" 2>/dev/null || true
+            install_name_tool -add_rpath "@executable_path/../Frameworks" "$PSQL_PLUGIN" 2>/dev/null || true
             
-            # Bundle libpq and its dependencies (libssl, libcrypto, etc.) into Frameworks
-            # Note: Do NOT use -od (overwrite-dir) as it would wipe out Qt frameworks!
-            dylibbundler -b -of -x build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib \
-              -d build/Helix.app/Contents/Frameworks/ \
-              -p @executable_path/../Frameworks/ \
-              -s "$(brew --prefix libpq)/lib" \
-              -s "$(brew --prefix openssl@3)/lib" \
-              -s /opt/homebrew/lib < /dev/null
+            for old_pq in $(otool -L "$PSQL_PLUGIN" | awk '{print $1}' | grep -E 'libpq' | sort -u); do
+              echo "Rewiring $PSQL_PLUGIN dependency: $old_pq -> @rpath/libpq.5.dylib"
+              install_name_tool -change "$old_pq" "@rpath/libpq.5.dylib" "$PSQL_PLUGIN" 2>/dev/null || true
+            done
           fi
           
-          # macdeployqt breaks the original ad-hoc signature by adding libraries. 
-          # We must re-sign the entire bundle ad-hoc to prevent the macOS "damaged" error.
+          # 5. Ensure main executable has Frameworks in rpath
+          install_name_tool -add_rpath "@executable_path/../Frameworks" build/Helix.app/Contents/MacOS/Helix 2>/dev/null || true
+          
+          # 6. Re-sign all individual binaries and the complete app bundle
+          find build/Helix.app/Contents/Frameworks -name "*.dylib" -exec codesign --force --sign - {} \;
+          find build/Helix.app/Contents/Frameworks -name "*.framework" -exec codesign --force --sign - {} \;
+          find build/Helix.app/Contents/PlugIns -name "*.dylib" -exec codesign --force --sign - {} \;
           codesign --force --deep --sign - build/Helix.app
           
-          # Create the DMG manually after signing
+          # Verify the bundle signature and dependencies
+          codesign --verify --deep --strict --verbose=2 build/Helix.app
+          if [ -f "$PSQL_PLUGIN" ]; then
+            echo "Final dependencies for libqsqlpsql.dylib:"
+            otool -L "$PSQL_PLUGIN"
+          fi
+          
+          # 7. Create the DMG manually after signing
           hdiutil create -volname "Helix" -srcfolder build/Helix.app -ov -format UDZO build/Helix.dmg
 
       # 10. Extract the version from version.json
