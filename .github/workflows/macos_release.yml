@@ -67,15 +67,34 @@ jobs:
       # 9. Deploy Qt dependencies and fix code signature
       - name: Deploy and Sign
         run: |
-          # Install dylibbundler to package Homebrew dependencies like libpq
+          export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
           brew install dylibbundler
           
           # macdeployqt bundles the Qt libraries, QML modules, and SQL drivers
           macdeployqt build/Helix.app -qmldir=qml -always-overwrite
           
-          # Bundle libpq and its dependencies (libssl, libcrypto) into the .app so the SQL driver works
-          dylibbundler -od -b -x build/Helix.app/Contents/MacOS/Helix -d build/Helix.app/Contents/Frameworks/ -p @executable_path/../Frameworks/
-          dylibbundler -od -b -x build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib -d build/Helix.app/Contents/Frameworks/ -p @executable_path/../Frameworks/
+          # Remove unused plugins that reference nonexistent libraries (like ODBC / iODBC)
+          rm -f build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlodbc.dylib
+          
+          # Point libqsqlpsql.dylib to the Homebrew libpq installation if needed
+          LIBPQ_PATH="$(brew --prefix libpq)/lib/libpq.5.dylib"
+          if [ -f "build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib" ]; then
+            chmod +w build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib
+            OLD_LIBPQ=$(otool -L build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib | grep -E 'libpq\.[0-9]+\.dylib' | awk '{print $1}' || true)
+            if [ -n "$OLD_LIBPQ" ] && [ "$OLD_LIBPQ" != "$LIBPQ_PATH" ]; then
+              echo "Fixing libqsqlpsql libpq link from $OLD_LIBPQ to $LIBPQ_PATH"
+              install_name_tool -change "$OLD_LIBPQ" "$LIBPQ_PATH" build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib
+            fi
+            
+            # Bundle libpq and its dependencies (libssl, libcrypto, etc.) into Frameworks
+            # Note: Do NOT use -od (overwrite-dir) as it would wipe out Qt frameworks!
+            dylibbundler -b -of -x build/Helix.app/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib \
+              -d build/Helix.app/Contents/Frameworks/ \
+              -p @executable_path/../Frameworks/ \
+              -s "$(brew --prefix libpq)/lib" \
+              -s "$(brew --prefix openssl@3)/lib" \
+              -s /opt/homebrew/lib < /dev/null
+          fi
           
           # macdeployqt breaks the original ad-hoc signature by adding libraries. 
           # We must re-sign the entire bundle ad-hoc to prevent the macOS "damaged" error.

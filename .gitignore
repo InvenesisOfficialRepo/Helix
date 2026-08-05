@@ -41,6 +41,7 @@ temp_*.txt
 # AI agent local settings
 .agent/
 .gemini/
+graphify-out/
 
 # Third-party local clones
 third_party/fluent-sila2-connector/

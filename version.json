@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.2.5",
-  "release_notes": "<h3>Helix 1.2.5</h3><ul><li>Added Daily Tecan Planner for automatic robotic assay batch grouping by assay code, solvent, and species.</li><li>Direct TecanWindow execution workflow from scheduled daily requests.</li><li>Fixed UI layout, date picker handling, and button aesthetics across the workstation.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.5/Helix_Setup.exe",
-  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.5/Helix.dmg"
+  "latest_version": "1.2.6",
+  "release_notes": "<h3>Helix 1.2.6</h3><ul><li>Updated database manager role-based table access permissions (user, userplus, admin).</li><li>Fixed macOS deployment and dynamic library bundling for PostgreSQL drivers.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.6/Helix_Setup.exe",
+  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.6/Helix.dmg"
 }

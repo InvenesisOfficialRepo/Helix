@@ -33,19 +33,39 @@ QStringList MainWindowViewModel::getVisibleTables() const {
     if (m_userRole == "admin") {
         filteredTables = allTables;
     } else if (m_userRole == "userplus") {
-        filteredTables = allTables;
-        filteredTables.removeOne("users");
-        filteredTables.removeOne("clients");
-        filteredTables.removeOne("client_users");
-    } else if (m_userRole == "user") {
-        filteredTables = {"test_requests", "bottles", "solutions"};
+        const QStringList forbidden = {"users", "clients", "client_users", "client_custom_pricing"};
+        for (const QString& table : allTables) {
+            bool isForbidden = false;
+            for (const QString& f : forbidden) {
+                if (table.compare(f, Qt::CaseInsensitive) == 0) {
+                    isForbidden = true;
+                    break;
+                }
+            }
+            if (!isForbidden) {
+                filteredTables.append(table);
+            }
+        }
+    } else { // Regular user ("user" or default)
+        const QStringList allowed = {"solutions", "bottles", "tracked_test_compounds", "parametre_plaque"};
+        for (const QString& table : allTables) {
+            for (const QString& a : allowed) {
+                if (table.compare(a, Qt::CaseInsensitive) == 0) {
+                    filteredTables.append(table);
+                    break;
+                }
+            }
+        }
+        if (filteredTables.isEmpty() && allTables.isEmpty()) {
+            filteredTables = allowed;
+        }
     }
 
     return filteredTables;
 }
 
 void MainWindowViewModel::loadTable(const QString& tableName) {
-    if (!getVisibleTables().contains(tableName)) {
+    if (!getVisibleTables().contains(tableName, Qt::CaseInsensitive)) {
         qWarning() << "Unauthorized table load attempt:" << tableName;
         return;
     }
