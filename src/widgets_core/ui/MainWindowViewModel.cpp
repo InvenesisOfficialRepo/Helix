@@ -47,7 +47,7 @@ QStringList MainWindowViewModel::getVisibleTables() const {
             }
         }
     } else { // Regular user ("user" or default)
-        const QStringList allowed = {"solutions", "bottles", "tracked_test_compounds", "parametre_plaque"};
+        const QStringList allowed = {"solutions", "bottles", "tracked_test_compounds", "parametre_plaque", "test_requests"};
         for (const QString& table : allTables) {
             for (const QString& a : allowed) {
                 if (table.compare(a, Qt::CaseInsensitive) == 0) {
