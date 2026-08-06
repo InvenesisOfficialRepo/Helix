@@ -1,4 +1,5 @@
 #include "dissolvebottledialog.h"
+#include "utils/UserSessionHelper.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -8,6 +9,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
+#include <QDate>
 
 DissolveBottleDialog::DissolveBottleDialog(const QVariantMap& bottleData, QWidget* parent)
     : QDialog(parent), m_bottleData(bottleData)
@@ -16,7 +18,7 @@ DissolveBottleDialog::DissolveBottleDialog(const QVariantMap& bottleData, QWidge
     setupUI();
 
     setWindowTitle(tr("Dissolve Bottle - %1").arg(m_compoundName));
-    resize(480, 520);
+    resize(480, 560);
 
     // Initial calculations
     onInputsChanged();
@@ -125,6 +127,19 @@ void DissolveBottleDialog::setupUI()
     concLayout->addWidget(solConcSpinBox);
     concLayout->addWidget(solConcUnitComboBox);
     solLayout->addRow(tr("Target Concentration:"), concLayout);
+
+    solPrepDateEdit = new QDateEdit(QDate::currentDate(), this);
+    solPrepDateEdit->setCalendarPopup(true);
+    solPrepDateEdit->setDisplayFormat("yyyy-MM-dd");
+    solLayout->addRow(tr("Preparation Date:"), solPrepDateEdit);
+
+    solExpDateEdit = new QDateEdit(QDate::currentDate().addYears(1), this);
+    solExpDateEdit->setCalendarPopup(true);
+    solExpDateEdit->setDisplayFormat("yyyy-MM-dd");
+    solLayout->addRow(tr("Expiration Date:"), solExpDateEdit);
+
+    solPreparedByEdit = new QLineEdit(SessionUtils::getCurrentUsername(), this);
+    solLayout->addRow(tr("Prepared By:"), solPreparedByEdit);
 
     mainLayout->addWidget(solGroup);
 
@@ -241,11 +256,11 @@ bool DissolveBottleDialog::saveAsSolution(QString* errOut)
         "INSERT INTO public.solutions ("
         "    invenesis_solution_id, product_name, concentration, concentration_unit, solvent, "
         "    molecular_weight, quantity, quantity_unit, purity, solvent_volume, "
-        "    container_id, well_id, matrix_tube_id, project_code, preparation_date"
+        "    container_id, well_id, matrix_tube_id, project_code, preparation_date, expiration_date, prepared_by"
         ") VALUES ("
         "    :invenesis_solution_id, :product_name, :concentration, :concentration_unit, :solvent, "
         "    :molecular_weight, :quantity, :quantity_unit, :purity, :solvent_volume, "
-        "    :container_id, :well_id, :matrix_tube_id, :project_code, CURRENT_DATE"
+        "    :container_id, :well_id, :matrix_tube_id, :project_code, :preparation_date, :expiration_date, :prepared_by"
         ")"
     );
 
@@ -263,6 +278,14 @@ bool DissolveBottleDialog::saveAsSolution(QString* errOut)
     query.bindValue(":well_id", solWellCoordinateEdit->text().trimmed().toUpper());
     query.bindValue(":matrix_tube_id", solBarcodeEdit->text().trimmed());
     query.bindValue(":project_code", m_projectCode.isEmpty() ? QVariant(QVariant::String) : m_projectCode);
+    query.bindValue(":preparation_date", solPrepDateEdit->date());
+    query.bindValue(":expiration_date", solExpDateEdit->date());
+
+    QString prepBy = solPreparedByEdit->text().trimmed();
+    if (prepBy.isEmpty()) {
+        prepBy = SessionUtils::getCurrentUsername();
+    }
+    query.bindValue(":prepared_by", prepBy);
 
     if (!query.exec()) {
         if (errOut) *errOut = query.lastError().text();

@@ -1,7 +1,6 @@
 #include "additemdialog.h"
 #include "ui_additemdialog.h"
 
-
 #include <QClipboard>
 #include <QMessageBox>
 #include <QHeaderView>
@@ -9,8 +8,10 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QApplication>
+#include <QDate>
 
 #include "../data_access/ItemDao.h"
+#include "utils/UserSessionHelper.h"
 
 AddItemDialog::AddItemDialog(const QString &tableName, QWidget *parent)
     : QDialog(parent),
@@ -71,6 +72,25 @@ void AddItemDialog::setupPages()
         tableWidget->setHorizontalHeaderLabels(QStringList() << meta.name);
         tableWidget->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
         tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+
+        // Pre-fill row 0 with intelligent defaults for compound tables
+        if (currentTable.compare("bottles", Qt::CaseInsensitive) == 0) {
+            if (meta.name.compare("receival_date", Qt::CaseInsensitive) == 0) {
+                tableWidget->setItem(0, 0, new QTableWidgetItem(QDate::currentDate().toString("yyyy-MM-dd")));
+            } else if (meta.name.compare("expiration_date", Qt::CaseInsensitive) == 0) {
+                tableWidget->setItem(0, 0, new QTableWidgetItem(QDate::currentDate().addYears(1).toString("yyyy-MM-dd")));
+            } else if (meta.name.compare("remarks", Qt::CaseInsensitive) == 0) {
+                tableWidget->setItem(0, 0, new QTableWidgetItem(SessionUtils::getCurrentUsername()));
+            }
+        } else if (currentTable.compare("solutions", Qt::CaseInsensitive) == 0) {
+            if (meta.name.compare("preparation_date", Qt::CaseInsensitive) == 0) {
+                tableWidget->setItem(0, 0, new QTableWidgetItem(QDate::currentDate().toString("yyyy-MM-dd")));
+            } else if (meta.name.compare("expiration_date", Qt::CaseInsensitive) == 0) {
+                tableWidget->setItem(0, 0, new QTableWidgetItem(QDate::currentDate().addYears(1).toString("yyyy-MM-dd")));
+            } else if (meta.name.compare("prepared_by", Qt::CaseInsensitive) == 0) {
+                tableWidget->setItem(0, 0, new QTableWidgetItem(SessionUtils::getCurrentUsername()));
+            }
+        }
 
         layout->addWidget(columnLabel);
         layout->addWidget(infoLabel);

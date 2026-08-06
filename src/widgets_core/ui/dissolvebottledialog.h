@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QDoubleSpinBox>
+#include <QDateEdit>
 #include <QLabel>
 #include <QDialogButtonBox>
 
@@ -49,6 +50,9 @@ private:
     QComboBox* solSolventComboBox;
     QDoubleSpinBox* solConcSpinBox;
     QComboBox* solConcUnitComboBox;
+    QDateEdit* solPrepDateEdit;
+    QDateEdit* solExpDateEdit;
+    QLineEdit* solPreparedByEdit;
 
     QLabel* calculationLabel;
     QDialogButtonBox* buttonBox;

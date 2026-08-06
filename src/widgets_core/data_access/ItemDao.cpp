@@ -1,7 +1,9 @@
 #include "ItemDao.h"
+#include "utils/UserSessionHelper.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlDatabase>
+#include <QDate>
 
 QString ItemDao::quoteIdent(const QString& ident) {
     QString out = ident;
@@ -78,6 +80,27 @@ bool ItemDao::insertRows(const QString& tableName, const QVector<ColumnMeta>& co
         for (int i = 0; i < columns.size(); ++i) {
             const auto& meta = columns[i];
             QString v = rawInputs[i];
+
+            // Intelligent defaults for compound tables when left empty
+            if (v.isEmpty()) {
+                if (tableName.compare("bottles", Qt::CaseInsensitive) == 0) {
+                    if (meta.name.compare("receival_date", Qt::CaseInsensitive) == 0) {
+                        v = QDate::currentDate().toString("yyyy-MM-dd");
+                    } else if (meta.name.compare("expiration_date", Qt::CaseInsensitive) == 0) {
+                        v = QDate::currentDate().addYears(1).toString("yyyy-MM-dd");
+                    } else if (meta.name.compare("remarks", Qt::CaseInsensitive) == 0) {
+                        v = SessionUtils::getCurrentUsername();
+                    }
+                } else if (tableName.compare("solutions", Qt::CaseInsensitive) == 0) {
+                    if (meta.name.compare("preparation_date", Qt::CaseInsensitive) == 0) {
+                        v = QDate::currentDate().toString("yyyy-MM-dd");
+                    } else if (meta.name.compare("expiration_date", Qt::CaseInsensitive) == 0) {
+                        v = QDate::currentDate().addYears(1).toString("yyyy-MM-dd");
+                    } else if (meta.name.compare("prepared_by", Qt::CaseInsensitive) == 0) {
+                        v = SessionUtils::getCurrentUsername();
+                    }
+                }
+            }
 
             colSql << quoteIdent(meta.name);
 

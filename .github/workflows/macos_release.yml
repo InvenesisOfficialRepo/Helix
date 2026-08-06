@@ -106,7 +106,7 @@ jobs:
           for dylib in "$FRAMEWORKS_DIR"/*.dylib; do
             [ -f "$dylib" ] || continue
             for dep in $(otool -L "$dylib" | awk '{print $1}' | grep -E '^(/opt/homebrew|/usr/local)' | sort -u); do
-              local dep_name=$(basename "$dep")
+              dep_name=$(basename "$dep")
               install_name_tool -change "$dep" "@rpath/$dep_name" "$dylib" 2>/dev/null || true
             done
           done

@@ -1,4 +1,5 @@
 #include "SessionViewModel.h"
+#include "utils/UserSessionHelper.h"
 
 SessionViewModel::SessionViewModel(QObject* parent)
     : QObject(parent)
@@ -73,6 +74,8 @@ void SessionViewModel::handleAuthResult(const QString& username, bool success, c
     username_ = username;
     role_ = role;
     isAuthenticated_ = true;
+
+    SessionUtils::saveCurrentUsername(username);
 
     emit usernameChanged();
     emit roleChanged();

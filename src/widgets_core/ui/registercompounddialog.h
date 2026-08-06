@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
+#include <QDateEdit>
 #include <QLabel>
 #include <QTabWidget>
 #include <QPushButton>
@@ -64,6 +65,9 @@ private:
     QComboBox* solVolumeUnitComboBox;
     QDoubleSpinBox* solConcSpinBox;
     QComboBox* solConcUnitComboBox;
+    QDateEdit* solPrepDateEdit;
+    QDateEdit* solExpDateEdit;
+    QLineEdit* solPreparedByEdit;
 
     // Powder Mode inputs
     QLineEdit* pwdCompoundNameEdit;
@@ -76,4 +80,7 @@ private:
     QComboBox* pwdStorageComboBox;
     QLineEdit* pwdLocationLabEdit;
     QLineEdit* pwdLocationShelfEdit;
+    QDateEdit* pwdRecDateEdit;
+    QDateEdit* pwdExpDateEdit;
+    QLineEdit* pwdRemarksEdit;
 };

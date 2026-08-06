@@ -1,4 +1,5 @@
 #include "registercompounddialog.h"
+#include "utils/UserSessionHelper.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -9,6 +10,7 @@
 #include <QRegularExpression>
 #include <QTabBar>
 #include <QDebug>
+#include <QDate>
 
 RegisterCompoundDialog::RegisterCompoundDialog(const QVariantMap& compoundData, QWidget* parent)
     : QDialog(parent), m_compoundData(compoundData)
@@ -167,6 +169,19 @@ void RegisterCompoundDialog::setupUI()
     concLayout->addWidget(solConcUnitComboBox);
     solLayout->addRow(tr("Stock Concentration:"), concLayout);
 
+    solPrepDateEdit = new QDateEdit(QDate::currentDate(), solutionTabWidget);
+    solPrepDateEdit->setCalendarPopup(true);
+    solPrepDateEdit->setDisplayFormat("yyyy-MM-dd");
+    solLayout->addRow(tr("Preparation Date:"), solPrepDateEdit);
+
+    solExpDateEdit = new QDateEdit(QDate::currentDate().addYears(1), solutionTabWidget);
+    solExpDateEdit->setCalendarPopup(true);
+    solExpDateEdit->setDisplayFormat("yyyy-MM-dd");
+    solLayout->addRow(tr("Expiration Date:"), solExpDateEdit);
+
+    solPreparedByEdit = new QLineEdit(SessionUtils::getCurrentUsername(), solutionTabWidget);
+    solLayout->addRow(tr("Prepared By:"), solPreparedByEdit);
+
     stackTabs->addTab(solutionTabWidget, tr("Solution"));
 
     // --- Tab 2: Powder Form ---
@@ -223,6 +238,19 @@ void RegisterCompoundDialog::setupUI()
     pwdLocationShelfEdit = new QLineEdit(powderTabWidget);
     pwdLocationShelfEdit->setPlaceholderText(tr("e.g. Shelf 2, Box B"));
     pwdLayout->addRow(tr("Location Shelf:"), pwdLocationShelfEdit);
+
+    pwdRecDateEdit = new QDateEdit(QDate::currentDate(), powderTabWidget);
+    pwdRecDateEdit->setCalendarPopup(true);
+    pwdRecDateEdit->setDisplayFormat("yyyy-MM-dd");
+    pwdLayout->addRow(tr("Receival Date:"), pwdRecDateEdit);
+
+    pwdExpDateEdit = new QDateEdit(QDate::currentDate().addYears(1), powderTabWidget);
+    pwdExpDateEdit->setCalendarPopup(true);
+    pwdExpDateEdit->setDisplayFormat("yyyy-MM-dd");
+    pwdLayout->addRow(tr("Expiration Date:"), pwdExpDateEdit);
+
+    pwdRemarksEdit = new QLineEdit(SessionUtils::getCurrentUsername(), powderTabWidget);
+    pwdLayout->addRow(tr("Remarks / User:"), pwdRemarksEdit);
 
     stackTabs->addTab(powderTabWidget, tr("Powder"));
 
@@ -312,11 +340,11 @@ bool RegisterCompoundDialog::saveAsSolution(QString* errOut)
         "INSERT INTO public.solutions ("
         "    invenesis_solution_id, product_name, concentration, concentration_unit, solvent, "
         "    molecular_weight, quantity, quantity_unit, purity, solvent_volume, "
-        "    container_id, well_id, matrix_tube_id, project_code, preparation_date"
+        "    container_id, well_id, matrix_tube_id, project_code, preparation_date, expiration_date, prepared_by"
         ") VALUES ("
         "    :invenesis_solution_id, :product_name, :concentration, :concentration_unit, :solvent, "
         "    :molecular_weight, :quantity, :quantity_unit, :purity, :solvent_volume, "
-        "    :container_id, :well_id, :matrix_tube_id, :project_code, CURRENT_DATE"
+        "    :container_id, :well_id, :matrix_tube_id, :project_code, :preparation_date, :expiration_date, :prepared_by"
         ")"
     );
 
@@ -344,6 +372,14 @@ bool RegisterCompoundDialog::saveAsSolution(QString* errOut)
     query.bindValue(":well_id", solWellCoordinateEdit->text().trimmed().toUpper());
     query.bindValue(":matrix_tube_id", solBarcodeEdit->text().trimmed());
     query.bindValue(":project_code", m_projectCode.isEmpty() ? QVariant(QVariant::String) : m_projectCode);
+    query.bindValue(":preparation_date", solPrepDateEdit->date());
+    query.bindValue(":expiration_date", solExpDateEdit->date());
+    
+    QString prepBy = solPreparedByEdit->text().trimmed();
+    if (prepBy.isEmpty()) {
+        prepBy = SessionUtils::getCurrentUsername();
+    }
+    query.bindValue(":prepared_by", prepBy);
 
     if (!query.exec()) {
         if (errOut) *errOut = query.lastError().text();
@@ -358,10 +394,10 @@ bool RegisterCompoundDialog::saveAsPowder(QString* errOut)
     query.prepare(
         "INSERT INTO public.bottles ("
         "    invenesis_bottle_id, product_name, molecular_weight, received_amount, amount_unit, "
-        "    purity, storage, receival_date, location_lab, location_shelf, project_code, matrix_tube_id"
+        "    purity, storage, receival_date, expiration_date, location_lab, location_shelf, project_code, matrix_tube_id, remarks"
         ") VALUES ("
         "    :invenesis_bottle_id, :product_name, :molecular_weight, :received_amount, :amount_unit, "
-        "    :purity, :storage, CURRENT_DATE, :location_lab, :location_shelf, :project_code, :matrix_tube_id"
+        "    :purity, :storage, :receival_date, :expiration_date, :location_lab, :location_shelf, :project_code, :matrix_tube_id, :remarks"
         ")"
     );
 
@@ -372,10 +408,18 @@ bool RegisterCompoundDialog::saveAsPowder(QString* errOut)
     query.bindValue(":amount_unit", pwdQuantityUnitComboBox->currentText());
     query.bindValue(":purity", pwdPuritySpinBox->value() > 0.0 ? QVariant(pwdPuritySpinBox->value()) : QVariant(QVariant::Double));
     query.bindValue(":storage", pwdStorageComboBox->currentText());
+    query.bindValue(":receival_date", pwdRecDateEdit->date());
+    query.bindValue(":expiration_date", pwdExpDateEdit->date());
     query.bindValue(":location_lab", pwdLocationLabEdit->text().trimmed().isEmpty() ? QVariant(QVariant::String) : pwdLocationLabEdit->text().trimmed());
     query.bindValue(":location_shelf", pwdLocationShelfEdit->text().trimmed().isEmpty() ? QVariant(QVariant::String) : pwdLocationShelfEdit->text().trimmed());
     query.bindValue(":project_code", m_projectCode.isEmpty() ? QVariant(QVariant::String) : m_projectCode);
     query.bindValue(":matrix_tube_id", pwdBarcodeEdit->text().trimmed());
+
+    QString remarks = pwdRemarksEdit->text().trimmed();
+    if (remarks.isEmpty()) {
+        remarks = SessionUtils::getCurrentUsername();
+    }
+    query.bindValue(":remarks", remarks);
 
     if (!query.exec()) {
         if (errOut) *errOut = query.lastError().text();

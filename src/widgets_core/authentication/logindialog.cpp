@@ -1,5 +1,9 @@
 #include "logindialog.h"
 #include "ui_logindialog.h"
+#include "qtbcrypt.h"
+#include "../database/Database.h"
+#include "resetpassworddialog.h"
+#include "utils/UserSessionHelper.h"
 
 #include <QMessageBox>
 #include <QPushButton>
@@ -95,16 +99,13 @@ void LoginDialog::loginButton_clicked() {
 
 void LoginDialog::loadLastUsername()
 {
-    QSettings settings("Invenesis", "DatabaseApp");
-    QString lastUser = settings.value("lastUsername", "").toString();  // ✅ Retrieve saved username
-
-    if (!lastUser.isEmpty()) {
+    QString lastUser = SessionUtils::getCurrentUsername();
+    if (!lastUser.isEmpty() && lastUser.compare("Unknown", Qt::CaseInsensitive) != 0) {
         ui->usernameLineEdit->setText(lastUser);
     }
 }
 
 void LoginDialog::saveLastUsername(const QString &username)
 {
-    QSettings settings("Invenesis", "DatabaseApp");
-    settings.setValue("lastUsername", username);  // ✅ Store username in settings
+    SessionUtils::saveCurrentUsername(username);
 }

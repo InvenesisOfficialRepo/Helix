@@ -88,7 +88,10 @@ public:
              {"expiration date", "expiry date", "exp date", "valid until"}},
              
             {"project_code", "Project Code", false, ImportDataType::String, 
-             {"project code", "project", "code"}}
+             {"project code", "project", "code"}},
+             
+            {"remarks", "Remarks", false, ImportDataType::String, 
+             {"remarks", "remark", "notes", "user", "comment", "comments"}}
         };
         return schema;
     }
@@ -132,6 +135,9 @@ public:
              
             {"preparation_date", "Preparation Date", false, ImportDataType::Date, 
              {"prep date", "preparation date", "date prepped"}},
+             
+            {"expiration_date", "Expiration Date", false, ImportDataType::Date, 
+             {"expiration date", "expiry date", "exp date", "valid until"}},
              
             {"project_code", "Project Code", false, ImportDataType::String, 
              {"project code", "project", "code"}},
