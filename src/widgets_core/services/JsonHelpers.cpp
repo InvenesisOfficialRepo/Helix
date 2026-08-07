@@ -69,8 +69,16 @@ bool jsonEqual(const QJsonValue &a, const QJsonValue &b) {
 
     if (ca.type() != cb.type()) {
         /* tolerate number <-> string if content matches */
-        if ((ca.isDouble() && cb.isString()) || (ca.isString() && cb.isDouble()))
-            return ca.toString() == cb.toString();
+        if (ca.isDouble() && cb.isString()) {
+            bool ok = false;
+            double bVal = cb.toString().toDouble(&ok);
+            return ok && (qFuzzyCompare(ca.toDouble(), bVal) || ca.toDouble() == bVal);
+        }
+        if (ca.isString() && cb.isDouble()) {
+            bool ok = false;
+            double aVal = ca.toString().toDouble(&ok);
+            return ok && (qFuzzyCompare(aVal, cb.toDouble()) || aVal == cb.toDouble());
+        }
         return false;
     }
     return jBytes(ca) == jBytes(cb);

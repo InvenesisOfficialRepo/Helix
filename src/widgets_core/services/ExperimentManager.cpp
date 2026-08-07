@@ -34,6 +34,10 @@ bool ExperimentManager::markTestRequestsDone(const QStringList& requestIds, QStr
     return m_dao->markTestRequestsDone(requestIds, errOut);
 }
 
+QString ExperimentManager::generateNextExperimentCode(const QDate& date, QString* errOut) const {
+    return m_dao->generateNextExperimentCode(date, errOut);
+}
+
 bool ExperimentManager::saveExperiment(const QString& expCode, const QString& username, const QJsonObject& stdObj, QJsonObject& currentJson, QString* errOut) const {
     currentJson["standard"] = stdObj;
     
@@ -355,11 +359,19 @@ QStandardItemModel* ExperimentManager::createCompoundModel(const QList<QVariantM
 
 QStandardItemModel* ExperimentManager::createTestRequestModelFromJson(const QJsonArray& array, QObject* parent) const {
     auto *model = new QStandardItemModel(parent);
-    const QStringList headers = {"request_id", "project_code", "requested_tests", "compound_name", 
-                                 "starting_concentration", "starting_concentration_unit", "dilution_steps", 
-                                 "number_of_dilutions", "number_of_replicate", 
-                                 "stock_concentration", "stock_concentration_unit", 
-                                 "additional_notes", "species", "solvent"};
+    QStringList headers = {"request_id", "project_code", "requested_tests", "compound_name", 
+                           "starting_concentration", "starting_concentration_unit", "dilution_steps", 
+                           "number_of_dilutions", "number_of_replicate", 
+                           "stock_concentration", "stock_concentration_unit", 
+                           "additional_notes", "species", "solvent"};
+    for (const QJsonValue &val : array) {
+        const QJsonObject obj = val.toObject();
+        for (const QString &k : obj.keys()) {
+            if (!headers.contains(k)) {
+                headers.append(k);
+            }
+        }
+    }
     model->setHorizontalHeaderLabels(headers);
     for (const QJsonValue &val : array) {
         const QJsonObject obj = val.toObject();
@@ -374,10 +386,18 @@ QStandardItemModel* ExperimentManager::createTestRequestModelFromJson(const QJso
 
 QStandardItemModel* ExperimentManager::createCompoundModelFromJson(const QJsonArray& array, QObject* parent) const {
     auto *model = new QStandardItemModel(parent);
-    const QStringList headers = {
+    QStringList headers = {
         "product_name",  "invenesis_solution_id", "quantity",       "quantity_unit",
         "concentration", "concentration_unit",    "container_id", "well_id",
-        "matrix_tube_id"};
+        "matrix_tube_id", "solution_id", "solvent"};
+    for (const QJsonValue &val : array) {
+        const QJsonObject obj = val.toObject();
+        for (const QString &k : obj.keys()) {
+            if (!headers.contains(k)) {
+                headers.append(k);
+            }
+        }
+    }
     model->setHorizontalHeaderLabels(headers);
     for (const QJsonValue &val : array) {
         const QJsonObject obj = val.toObject();

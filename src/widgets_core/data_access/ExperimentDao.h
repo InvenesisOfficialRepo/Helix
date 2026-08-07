@@ -6,11 +6,14 @@
 #include <QVariantMap>
 #include <QJsonObject>
 #include <QString>
+#include <QDate>
 
 class ExperimentDao {
 public:
     ExperimentDao() = default;
     ~ExperimentDao() = default;
+
+    QString generateNextExperimentCode(const QDate& date = QDate::currentDate(), QString* errOut = nullptr) const;
 
     QList<QVariantMap> fetchTestRequests(const QStringList& requestIds, QString* errOut = nullptr) const;
     QList<QVariantMap> fetchSolutionsForCompound(const QString& compoundName, const QString& solvent = QString(), QString* errOut = nullptr) const;

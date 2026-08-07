@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.2.8",
-  "release_notes": "<h3>Helix 1.2.8</h3><ul><li>Added test_requests table access for regular user role in Database Manager.</li><li>Automatic population of receival/preparation date, 1-year expiration date, and user metadata across all compound registration and import workflows.</li></ul>",
-  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.8/Helix_Setup.exe",
-  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.8/Helix.dmg"
+  "latest_version": "1.2.9",
+  "release_notes": "<h3>Helix 1.2.9</h3><ul><li>Automated experiment naming convention (EXPYYYYMMDD_XX) with connected user detection.</li><li>Prevented redundant saving and new code generation on already saved/opened experiments.</li><li>Fixed automatic dirty state detection to eliminate false overwrite prompts on GWL generation and Fluent execution.</li><li>Preserved dynamic columns and fixed JSON type coercion across experiment models.</li></ul>",
+  "download_url": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.9/Helix_Setup.exe",
+  "download_url_mac": "https://github.com/InvenesisOfficialRepo/Helix/releases/download/v1.2.9/Helix.dmg"
 }

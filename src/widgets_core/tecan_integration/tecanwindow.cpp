@@ -42,6 +42,8 @@
 #include "hardware/FluentSilaClient.h"
 
 #include "services/JsonHelpers.h"
+#include "utils/UserSessionHelper.h"
+#include <QDate>
 
 using SqlModelUPtr = std::unique_ptr<QSqlQueryModel>;
 
@@ -621,32 +623,9 @@ void TecanWindow::on_switchPlate_toggled(bool checked) {
 /*                      SAVE EXPERIMENT                           */
 /* ============================================================== */
 void TecanWindow::on_actionSave_triggered() {
-  /* --- ask experiment code ----------------------------------- */
-  bool ok = false;
-  const QString expCode = QInputDialog::getText(this, tr("Save Experiment"),
-                                                tr("Enter experiment code:"),
-                                                QLineEdit::Normal, "", &ok);
-  if (!ok || expCode.trimmed().isEmpty())
-    return;
-
-  /* --- ask user name ----------------------------------------- */
-  const QString username = QInputDialog::getText(
-      this, tr("User"), tr("Enter your name:"), QLineEdit::Normal, "", &ok);
-  if (!ok || username.trimmed().isEmpty())
-    return;
-
-  /* --- ask for STANDARD compound ----------------------------- */
-  StandardSelectionDialog stdDlg(this);
-  if (stdDlg.exec() != QDialog::Accepted) {
-    showInfo(this, tr("Cancelled"), tr("Save aborted."));
-    return;
-  }
-  const QJsonObject stdObj = stdDlg.selectedStandardJson();
-  if (stdObj.isEmpty()) {
-    showWarning(this, tr("Invalid Standard"),
-                tr("No valid standard selected."));
-    return;
-  }
+  const QJsonObject lastSaved = m_viewModel->getLastSavedExperimentJson();
+  QString expCode = lastSaved.value("experiment_code").toString();
+  const QString username = SessionUtils::getCurrentUsername();
 
   /* --- build CURRENT JSON snapshot --------------------------- */
   QList<DaughterPlateWidget*> daughterPlatesList;
@@ -673,11 +652,50 @@ void TecanWindow::on_actionSave_triggered() {
   );
   if (expJson.isEmpty())
     return; // build routine already showed msg
+
+  // Check if we already have a saved experiment and whether it is modified
+  if (!lastSaved.isEmpty() && !expCode.isEmpty()) {
+      expJson["standard"] = lastSaved["standard"];
+      if (!ExperimentJsonSerializer::isExperimentModified(lastSaved, expJson)) {
+          showInfo(this, tr("Experiment Already Saved"),
+                   tr("Experiment '%1' is already saved and has no unsaved changes.").arg(expCode));
+          return;
+      }
+  }
+
+  QJsonObject stdObj;
+  if (!lastSaved.isEmpty() && lastSaved.contains("standard") && !lastSaved["standard"].toObject().isEmpty()) {
+      stdObj = lastSaved["standard"].toObject();
+  } else {
+      /* --- ask for STANDARD compound ----------------------------- */
+      StandardSelectionDialog stdDlg(this);
+      if (stdDlg.exec() != QDialog::Accepted) {
+        showInfo(this, tr("Cancelled"), tr("Save aborted."));
+        return;
+      }
+      stdObj = stdDlg.selectedStandardJson();
+      if (stdObj.isEmpty()) {
+        showWarning(this, tr("Invalid Standard"),
+                    tr("No valid standard selected."));
+        return;
+      }
+  }
+
+  // If this is a brand new experiment (no code yet), generate the next code
+  bool isNewExperiment = false;
+  if (expCode.isEmpty()) {
+      isNewExperiment = true;
+      QString expErr;
+      expCode = m_viewModel->getExperimentManager()->generateNextExperimentCode(QDate::currentDate(), &expErr);
+      if (expCode.isEmpty()) {
+        showError(this, tr("Database Error"), tr("Failed to generate experiment code:\n%1").arg(expErr));
+        return;
+      }
+      expJson["experiment_code"] = expCode;
+  }
+
   expJson["standard"] = stdObj;
-
   ExperimentJsonSerializer::addConcentrationsToExperimentJson(expJson, m_viewModel->getQcPlatesJson());
-
-  qDebug() << QJsonDocument(expJson).toJson(QJsonDocument::Indented);
 
   /* --- write to DB ------------------------------------------- */
   QString err;
@@ -685,7 +703,12 @@ void TecanWindow::on_actionSave_triggered() {
       showError(this, tr("Database Error"), tr("Failed to insert/update experiment:\n%1").arg(err));
       return;
   }
-  showInfo(this, tr("Success"), tr("Experiment saved successfully!"));
+
+  if (isNewExperiment) {
+      showInfo(this, tr("Success"), tr("Experiment %1 saved successfully!").arg(expCode));
+  } else {
+      showInfo(this, tr("Success"), tr("Experiment %1 updated successfully!").arg(expCode));
+  }
   m_viewModel->setLastSavedExperimentJson(expJson);
 }
 
@@ -711,6 +734,10 @@ void TecanWindow::on_actionLoad_triggered() {
       return;
   }
   
+  if (!loadedJson.contains("experiment_code") && !expCode.isEmpty()) {
+      loadedJson["experiment_code"] = expCode;
+  }
+
   m_viewModel->setLastSavedExperimentJson(loadedJson);
 
   /* ---- restore UI state ---- */
@@ -953,8 +980,8 @@ void TecanWindow::on_actionGenerate_GWL_triggered() {
     generateGWLFromJson(json);
   };
 
-  /* 2 – compare order-insensitively ---------------------------------- */
-  if (!JsonHelpers::jsonEqual(m_viewModel->getLastSavedExperimentJson(), currentJson)) {
+  /* 2 – compare order-insensitively using isExperimentModified ------- */
+  if (ExperimentJsonSerializer::isExperimentModified(m_viewModel->getLastSavedExperimentJson(), currentJson)) {
     const auto choice = QMessageBox::question(
         this, tr("Experiment Modified"),
         tr("Changes have been made since last save.\n"
@@ -966,6 +993,7 @@ void TecanWindow::on_actionGenerate_GWL_triggered() {
 
     if (choice == QMessageBox::Yes) {
       on_actionSave_triggered();
+      chooseInstrumentAndGenerate(m_viewModel->getLastSavedExperimentJson());
       return;
     }
 
@@ -1358,7 +1386,7 @@ void TecanWindow::on_actionRun_Fluent_triggered()
     currentJson["standard"] = m_viewModel->getLastSavedExperimentJson()["standard"];
 
     // 3. Confirm if unsaved changes exist
-    if (!JsonHelpers::jsonEqual(m_viewModel->getLastSavedExperimentJson(), currentJson)) {
+    if (ExperimentJsonSerializer::isExperimentModified(m_viewModel->getLastSavedExperimentJson(), currentJson)) {
         const auto choice = QMessageBox::question(
             this, tr("Experiment Modified"),
             tr("Changes have been made since last save.\nDo you want to overwrite the saved experiment?"),
@@ -1366,7 +1394,7 @@ void TecanWindow::on_actionRun_Fluent_triggered()
         if (choice == QMessageBox::Cancel) return;
         if (choice == QMessageBox::Yes) {
             on_actionSave_triggered();
-            return;
+            currentJson = m_viewModel->getLastSavedExperimentJson();
         }
         // If No, continue with currentJson
     } else {

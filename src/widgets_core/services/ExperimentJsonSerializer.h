@@ -40,6 +40,16 @@ namespace ExperimentJsonSerializer {
      */
     void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcPlatesJson);
 
+    /**
+     * @brief Sanitizes an experiment JSON object for comparison by stripping derived data (e.g. concentrations, transient keys).
+     */
+    QJsonObject sanitizeForComparison(const QJsonObject &root);
+
+    /**
+     * @brief Checks if the current UI experiment state has changed compared to the last saved snapshot.
+     */
+    bool isExperimentModified(const QJsonObject &lastSaved, const QJsonObject &currentUiJson);
+
     // Parsing helpers
     QStandardItemModel* parseTestRequests(const QJsonArray &array, QObject* parent);
     QStandardItemModel* parseCompounds(const QJsonArray &array, QObject* parent);

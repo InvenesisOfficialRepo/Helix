@@ -1,4 +1,5 @@
 #include "ExperimentJsonSerializer.h"
+#include "JsonHelpers.h"
 #include "plate_management/daughterplatewidget.h"
 #include "tecan_integration/gwlgenerator.h"
 #include "services/DilutionEngine.h"
@@ -413,16 +414,73 @@ void addConcentrationsToExperimentJson(QJsonObject &root, const QJsonObject& qcP
     root["qc_plates"] = computePlateConcs(root.value("qc_plates").toArray(), "qc");
 }
 
+QJsonObject sanitizeForComparison(const QJsonObject &root) {
+    QJsonObject clean = root;
+    auto cleanPlates = [](const QJsonArray &plates) {
+        QJsonArray res;
+        for (const QJsonValue &pv : plates) {
+            QJsonObject pObj = pv.toObject();
+            pObj.remove("concentrations");
+            res.append(pObj);
+        }
+        return res;
+    };
+    if (clean.contains("daughter_plates"))
+        clean["daughter_plates"] = cleanPlates(clean["daughter_plates"].toArray());
+    if (clean.contains("test_plates"))
+        clean["test_plates"] = cleanPlates(clean["test_plates"].toArray());
+    if (clean.contains("qc_plates"))
+        clean["qc_plates"] = cleanPlates(clean["qc_plates"].toArray());
+
+    QStringList keysToRemove;
+    for (const QString &k : clean.keys()) {
+        if (k.startsWith('_')) keysToRemove.append(k);
+    }
+    for (const QString &k : keysToRemove) clean.remove(k);
+
+    return clean;
+}
+
+bool isExperimentModified(const QJsonObject &lastSaved, const QJsonObject &currentUiJson) {
+    if (lastSaved.isEmpty()) return true;
+
+    QJsonObject cleanSaved = sanitizeForComparison(lastSaved);
+    QJsonObject cleanCurrent = sanitizeForComparison(currentUiJson);
+
+    // If standard was present in lastSaved but not yet set in currentUiJson, match it
+    if (!cleanSaved["standard"].isUndefined() && (cleanCurrent["standard"].isUndefined() || cleanCurrent["standard"].isNull())) {
+        cleanCurrent["standard"] = cleanSaved["standard"];
+    }
+    // If experiment_code was present in lastSaved, ensure currentUiJson has it for comparison
+    if (!cleanSaved["experiment_code"].toString().isEmpty() && cleanCurrent["experiment_code"].toString().isEmpty()) {
+        cleanCurrent["experiment_code"] = cleanSaved["experiment_code"];
+    }
+    // If user was present in lastSaved, ensure currentUiJson has it for comparison
+    if (!cleanSaved["user"].toString().isEmpty() && cleanCurrent["user"].toString().isEmpty()) {
+        cleanCurrent["user"] = cleanSaved["user"];
+    }
+
+    return !JsonHelpers::jsonEqual(cleanSaved, cleanCurrent);
+}
+
 QStandardItemModel* parseTestRequests(const QJsonArray &array, QObject* parent) {
     if (array.isEmpty()) return nullptr;
 
     auto *model = new QStandardItemModel(parent);
-    const QStringList headers = {"request_id", "project_code", "requested_tests",
-                                 "compound_name", "starting_concentration",
-                                 "starting_concentration_unit", "dilution_steps",
-                                 "number_of_dilutions", "number_of_replicate", 
-                                 "stock_concentration", "stock_concentration_unit", 
-                                 "additional_notes"};
+    QStringList headers = {"request_id", "project_code", "requested_tests",
+                           "compound_name", "starting_concentration",
+                           "starting_concentration_unit", "dilution_steps",
+                           "number_of_dilutions", "number_of_replicate", 
+                           "stock_concentration", "stock_concentration_unit", 
+                           "additional_notes", "species", "solvent"};
+    for (const QJsonValue &val : array) {
+        const QJsonObject obj = val.toObject();
+        for (const QString &k : obj.keys()) {
+            if (!headers.contains(k)) {
+                headers.append(k);
+            }
+        }
+    }
     model->setHorizontalHeaderLabels(headers);
 
     for (const QJsonValue &val : array) {
@@ -440,10 +498,18 @@ QStandardItemModel* parseCompounds(const QJsonArray &array, QObject* parent) {
     if (array.isEmpty()) return nullptr;
 
     auto *model = new QStandardItemModel(parent);
-    const QStringList headers = {
+    QStringList headers = {
         "product_name",  "invenesis_solution_id", "quantity",       "quantity_unit",
         "concentration", "concentration_unit",    "container_id", "well_id",
-        "matrix_tube_id"};
+        "matrix_tube_id", "solution_id", "solvent"};
+    for (const QJsonValue &val : array) {
+        const QJsonObject obj = val.toObject();
+        for (const QString &k : obj.keys()) {
+            if (!headers.contains(k)) {
+                headers.append(k);
+            }
+        }
+    }
     model->setHorizontalHeaderLabels(headers);
 
     for (const QJsonValue &val : array) {

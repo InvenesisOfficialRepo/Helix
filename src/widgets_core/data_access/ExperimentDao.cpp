@@ -7,6 +7,44 @@
 #include <QSqlDatabase>
 #include <QDebug>
 #include <QSqlQueryModel>
+#include <QDate>
+
+QString ExperimentDao::generateNextExperimentCode(const QDate& date, QString* errOut) const {
+    QSqlDatabase db = QSqlDatabase::database();
+    if (!db.isValid() || !db.isOpen()) {
+        if (errOut) *errOut = "Database is not open.";
+        return QString();
+    }
+
+    const QString dateStr = (date.isValid() ? date : QDate::currentDate()).toString("yyyyMMdd");
+    const QString prefix = QStringLiteral("EXP%1_").arg(dateStr);
+    const QString pattern = prefix + QLatin1Char('%');
+
+    QSqlQuery q(db);
+    q.prepare("SELECT experiment_code FROM experiments WHERE experiment_code LIKE :pattern");
+    q.bindValue(":pattern", pattern);
+
+    if (!q.exec()) {
+        if (errOut) *errOut = q.lastError().text();
+        return QString();
+    }
+
+    int maxIndex = 0;
+    while (q.next()) {
+        const QString code = q.value(0).toString().trimmed();
+        if (code.startsWith(prefix, Qt::CaseInsensitive)) {
+            const QString suffix = code.mid(prefix.length());
+            bool ok = false;
+            int num = suffix.toInt(&ok);
+            if (ok && num > maxIndex) {
+                maxIndex = num;
+            }
+        }
+    }
+
+    int nextIndex = maxIndex + 1;
+    return QString("%1%2").arg(prefix, QString::number(nextIndex).rightJustified(2, '0'));
+}
 
 QList<QVariantMap> ExperimentDao::fetchTestRequests(const QStringList& requestIds, QString* errOut) const {
     QList<QVariantMap> results;
@@ -219,7 +257,7 @@ bool ExperimentDao::markTestRequestsDone(const QStringList& requestIds, QString*
 QSqlQueryModel* ExperimentDao::fetchExperimentListModel(QObject* parent) const {
     QSqlQueryModel* model = new QSqlQueryModel(parent);
     model->setQuery(R"(
-        SELECT experiment_id, experiment_code, project_code, date_created, user
+        SELECT experiment_id, experiment_code, project_code, date_created, COALESCE(data->>'user', '') AS "user"
         FROM experiments
         ORDER BY date_created DESC
     )");

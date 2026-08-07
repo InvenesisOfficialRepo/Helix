@@ -35,6 +35,7 @@ public:
     TestPlatesResult calculateTestPlates(int dilutionSteps, const QString& testType, const QList<QMap<QString, QStringList>>& daughterPlates, const QJsonObject& qcPlatesJson, const QString& qcType, const QString& standardName = "Standard") const;
 
     // JSON Manipulation & Persistence
+    QString generateNextExperimentCode(const QDate& date = QDate::currentDate(), QString* errOut = nullptr) const;
     bool saveExperiment(const QString& expCode, const QString& username, const QJsonObject& stdObj, QJsonObject& currentJson, QString* errOut = nullptr) const;
     QJsonObject loadExperiment(int expId, QString* expCodeOut = nullptr, QString* errOut = nullptr) const;
     void addConcentrationsToExperimentJson(QJsonObject& root, const QJsonObject& qcPlatesJson) const;
